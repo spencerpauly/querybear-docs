@@ -1,0 +1,44 @@
+---
+title: "Schema Detection"
+description: "QueryBear auto-detects every table, column, and relationship the moment you connect a database — so your AI writes accurate SQL instead of hallucinating column names."
+---
+
+The single biggest reason AI-generated SQL fails is that the model guesses at your schema. QueryBear removes the guessing: the moment you connect a database, it introspects the full structure and exposes it to your AI clients through the `get_schema` tool.
+
+## What gets detected
+
+On connect, QueryBear scans:
+
+- **Tables and views** — including materialized views.
+- **Columns** — names, data types, nullability.
+- **Relationships** — foreign keys, so the AI knows how to join correctly.
+- **Indexes** — useful context for the AI to write efficient queries.
+
+```
+✓ Found 24 tables, 186 columns, 12 foreign keys
+  users           14 columns
+  orders          11 columns
+  products         9 columns
+  …
+✓ 12 foreign keys mapped
+✓ Schema cached and ready for queries
+```
+
+## How the AI uses it
+
+When an AI client needs to write a query, it calls `get_schema` first. QueryBear returns the structure of your **allow-listed** tables, with **blocked columns stripped out**. The AI then writes SQL grounded in the real schema — correct table names, correct column names, correct joins.
+
+This is why the recommended workflow is always *"call get_schema, then write the query."* It dramatically improves accuracy.
+
+## Caching and refresh
+
+The schema is cached so repeated `get_schema` calls are fast. When your database structure changes (a migration adds a column), refresh the schema from the dashboard or let QueryBear pick it up on the next scan. Newly added tables remain invisible until you add them to the [allow-list](/features/access-control) — schema detection never silently widens access.
+
+## Respects your access rules
+
+Schema detection and [access control](/features/access-control) work together: the AI only ever sees the schema of tables you've enabled, minus any blocked columns. Detection gives the AI *enough* context to be accurate, never more than you've allowed.
+
+## Related
+
+- [Access control](/features/access-control) — scope which schema the AI sees
+- [Custom context](/features/custom-context) — enrich the schema with descriptions

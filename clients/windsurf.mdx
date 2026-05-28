@@ -5,18 +5,7 @@ description: "Connect Windsurf to your PostgreSQL, MySQL, or SQLite database usi
 
 **[Windsurf](https://codeium.com/windsurf)** is Codeium's AI-first code editor. It supports MCP servers via its settings UI — paste in a JSON snippet and Windsurf's Cascade agent gets access.
 
-## Why QueryBear + Windsurf
-
-Windsurf's Cascade agent shines on long-running, multi-step tasks. The more it can see, the better its plans. QueryBear lets Cascade:
-
-- Reference real database schemas when writing or refactoring data access code.
-- Verify the impact of a migration before suggesting one.
-- Look up specific rows when debugging customer reports.
-- Generate analytics queries on demand.
-
-…without ever giving the agent write access or visibility into sensitive columns.
-
-## Setup
+## Connect
 
 In Windsurf:
 
@@ -42,13 +31,24 @@ In Windsurf:
   </Step>
 </Steps>
 
-## Verify
+### Verify
 
 In Cascade, ask:
 
 > *"What QueryBear tools do you have?"*
 
 You should see `list_connections`, `get_schema`, and `run_query`.
+
+## Why QueryBear + Windsurf
+
+Windsurf's Cascade agent shines on long-running, multi-step tasks. The more it can see, the better its plans. QueryBear lets Cascade:
+
+- Reference real database schemas when writing or refactoring data access code.
+- Verify the impact of a migration before suggesting one.
+- Look up specific rows when debugging customer reports.
+- Generate analytics queries on demand.
+
+…without ever giving the agent write access or visibility into sensitive columns.
 
 ## Per-database setup guides
 
@@ -80,5 +80,5 @@ You should see `list_connections`, `get_schema`, and `run_query`.
 ## Related
 
 - [Quickstart](/quickstart) — full QueryBear setup
-- [Security model](/security) — what the gateway enforces
+- [Security model](/features/security) — what the gateway enforces
 - [Cursor](/clients/cursor) — the other AI-first code editor

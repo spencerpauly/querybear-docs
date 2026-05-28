@@ -5,6 +5,24 @@ description: "Connect Claude Code to your PostgreSQL, MySQL, or SQLite database 
 
 **[Claude Code](https://claude.com/claude-code)** is Anthropic's terminal-based AI coding agent. It speaks MCP natively, so adding QueryBear takes one command — your terminal Claude session can now read your real production database safely.
 
+## Connect
+
+Run this in your terminal:
+
+```bash
+claude mcp add --transport http querybear https://mcp.querybear.com/mcp
+```
+
+That's it. The next time you start `claude`, it will prompt you to authorize QueryBear via OAuth — opens a browser, you click "Approve", and it links Claude Code to your QueryBear account.
+
+### Verify
+
+Inside a Claude Code session, ask:
+
+> *"What QueryBear tools do you have available?"*
+
+You should see `list_connections`, `get_schema`, and `run_query`. If you don't, restart `claude` and try again.
+
 ## Why QueryBear + Claude Code
 
 Claude Code is most useful when it has visibility into the systems you're working on. For backend work, that almost always includes the database. QueryBear lets Claude Code:
@@ -15,24 +33,6 @@ Claude Code is most useful when it has visibility into the systems you're workin
 - Debug user-reported issues by looking up the actual row.
 
 …all without giving Claude Code direct database credentials, write access, or visibility into sensitive columns.
-
-## Setup
-
-Run this in your terminal:
-
-```bash
-claude mcp add --transport http querybear https://mcp.querybear.com/mcp
-```
-
-That's it. The next time you start `claude`, it will prompt you to authorize QueryBear via OAuth — opens a browser, you click "Approve", and it links Claude Code to your QueryBear account.
-
-## Verify
-
-Inside a Claude Code session, ask:
-
-> *"What QueryBear tools do you have available?"*
-
-You should see `list_connections`, `get_schema`, and `run_query`. If you don't, restart `claude` and try again.
 
 ## Per-database setup guides
 
@@ -78,5 +78,5 @@ Claude writes the SQL, runs it, formats the result inline.
 ## Related
 
 - [Quickstart](/quickstart) — full QueryBear setup
-- [Security model](/security) — what the gateway enforces
+- [Security model](/features/security) — what the gateway enforces
 - [Claude Desktop](/clients/claude-desktop) — the GUI sibling of Claude Code

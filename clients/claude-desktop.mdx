@@ -5,17 +5,7 @@ description: "Connect Claude Desktop to your PostgreSQL, MySQL, or SQLite databa
 
 **Claude Desktop** is Anthropic's macOS/Windows app for Claude. Recent versions support **Custom Connectors** — Anthropic's term for adding an MCP server through the UI. QueryBear works as a Custom Connector, so any conversation in Claude Desktop can query your database.
 
-## Why QueryBear + Claude Desktop
-
-Claude Desktop is the most accessible AI client for non-technical teammates. Wiring up QueryBear means:
-
-- Product managers can ask *"how many free users have over 1000 events?"* and get an answer without bothering an engineer.
-- Customer success can look up a user's account state mid-conversation with a customer.
-- Founders can sanity-check headline metrics during board prep.
-
-Because QueryBear enforces the security boundary (allow-listed tables, blocked columns, audit log), giving Claude Desktop database access doesn't mean giving every team member raw SQL access to production.
-
-## Setup
+## Connect
 
 In Claude Desktop:
 
@@ -37,13 +27,23 @@ In Claude Desktop:
   </Step>
 </Steps>
 
-## Verify
+### Verify
 
 In a new Claude Desktop conversation, ask:
 
 > *"What QueryBear tools do you have?"*
 
 You should see `list_connections`, `get_schema`, and `run_query`.
+
+## Why QueryBear + Claude Desktop
+
+Claude Desktop is the most accessible AI client for non-technical teammates. Wiring up QueryBear means:
+
+- Product managers can ask *"how many free users have over 1000 events?"* and get an answer without bothering an engineer.
+- Customer success can look up a user's account state mid-conversation with a customer.
+- Founders can sanity-check headline metrics during board prep.
+
+Because QueryBear enforces the security boundary (allow-listed tables, blocked columns, audit log), giving Claude Desktop database access doesn't mean giving every team member raw SQL access to production.
 
 ## Per-database setup guides
 
@@ -75,5 +75,5 @@ You should see `list_connections`, `get_schema`, and `run_query`.
 ## Related
 
 - [Quickstart](/quickstart) — full QueryBear setup
-- [Security model](/security) — what the gateway enforces
+- [Security model](/features/security) — what the gateway enforces
 - [Claude Code](/clients/claude-code) — Anthropic's terminal CLI sibling

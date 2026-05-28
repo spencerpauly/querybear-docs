@@ -1,0 +1,43 @@
+---
+title: "Custom Context"
+description: "Annotate your tables and columns with plain-English descriptions so QueryBear's AI clients understand your domain and write the queries you actually mean."
+---
+
+Schema detection tells the AI *what* your tables and columns are called. Custom context tells it what they **mean**. By annotating your schema with descriptions, you turn cryptic column names and undocumented conventions into knowledge the AI can act on — so it writes the query you intended, not the one your column names accidentally imply.
+
+## The problem custom context solves
+
+Real schemas are full of traps for an AI:
+
+- `amount` is stored in **cents**, not dollars.
+- `status = 3` means "churned" — but nothing in the schema says so.
+- `deleted_at IS NOT NULL` marks soft-deleted rows that should usually be excluded.
+- `mrr_v2` is the real revenue column; `mrr` is deprecated.
+
+Without context, the AI guesses — and quietly returns wrong numbers. With context, it knows.
+
+## How it works
+
+In the dashboard, open a connection's schema and add descriptions to:
+
+- **Tables** — what the table represents, and any rows that should typically be filtered out.
+- **Columns** — units, enumerations, conventions, and which columns are canonical vs. deprecated.
+
+These descriptions are attached to the schema QueryBear returns from `get_schema`, so every AI client — Claude, Cursor, ChatGPT, and the rest — sees them when it plans a query.
+
+## Example
+
+Annotating the `orders` table:
+
+> *"`orders` — one row per completed checkout. Exclude rows where `status = 'void'`. `total_cents` is in cents (divide by 100 for dollars). Use `created_at` (UTC) for time filters, not `updated_at`."*
+
+Now when someone asks *"what was revenue last month?"*, the AI divides by 100, filters voids, and uses the right timestamp — without anyone re-explaining the schema every time.
+
+## Why annotate once
+
+Custom context lives with the connection, so the knowledge is shared across every client and every teammate. You document a quirk once, and every future query — by any agent, in any tool — benefits. It's the difference between an AI that knows your data and one that merely sees it.
+
+## Related
+
+- [Schema detection](/features/schema-detection) — the structure custom context enriches
+- [Memory](/features/memory) — context QueryBear infers automatically over time

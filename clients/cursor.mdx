@@ -5,16 +5,7 @@ description: "Connect Cursor to your PostgreSQL, MySQL, or SQLite database using
 
 **[Cursor](https://cursor.com)** is the AI-first code editor. It has first-class MCP support — define an MCP server in `.cursor/mcp.json` and Cursor's agent can use it across all chat, composer, and inline modes.
 
-## Why QueryBear + Cursor
-
-When you're pair-programming with Cursor, the database is often the thing you most need it to see. Without QueryBear, you copy-paste schemas into the chat or describe the data structure in prose. With QueryBear, Cursor can:
-
-- Pull the actual schema when generating queries — no more hallucinated column names.
-- Verify migrations against real data before you run them.
-- Answer "does this row exist?" / "how many users have field X set?" while you're writing code.
-- Generate seed data based on real production distributions (without ever leaking the rows themselves — QueryBear's row limit + column blocks see to that).
-
-## Setup
+## Connect
 
 Choose **project-scoped** or **global** install:
 
@@ -50,6 +41,15 @@ In Cursor chat or composer, ask:
 
 You should see `list_connections`, `get_schema`, and `run_query`. If you don't see them after restarting Cursor, check **Settings → MCP** for any error messages.
 
+## Why QueryBear + Cursor
+
+When you're pair-programming with Cursor, the database is often the thing you most need it to see. Without QueryBear, you copy-paste schemas into the chat or describe the data structure in prose. With QueryBear, Cursor can:
+
+- Pull the actual schema when generating queries — no more hallucinated column names.
+- Verify migrations against real data before you run them.
+- Answer "does this row exist?" / "how many users have field X set?" while you're writing code.
+- Generate seed data based on real production distributions (without ever leaking the rows themselves — QueryBear's row limit + column blocks see to that).
+
 ## Per-database setup guides
 
 <CardGroup cols={2}>
@@ -80,5 +80,5 @@ You should see `list_connections`, `get_schema`, and `run_query`. If you don't s
 ## Related
 
 - [Quickstart](/quickstart) — full QueryBear setup
-- [Security model](/security) — what the gateway enforces
+- [Security model](/features/security) — what the gateway enforces
 - [Windsurf](/clients/windsurf) — the other AI-first code editor

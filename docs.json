@@ -13,7 +13,18 @@
     "groups": [
       {
         "group": "Get Started",
-        "pages": ["index", "what-is-mcp", "quickstart", "security"]
+        "pages": ["index", "what-is-mcp", "quickstart"]
+      },
+      {
+        "group": "Features",
+        "pages": [
+          "features/security",
+          "features/access-control",
+          "features/schema-detection",
+          "features/custom-context",
+          "features/memory",
+          "features/audit-trail"
+        ]
       },
       {
         "group": "Databases",
@@ -109,8 +120,8 @@
     ]
   },
   "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
+    "light": "/logo/light.png",
+    "dark": "/logo/dark.png"
   },
   "navbar": {
     "links": [

@@ -1,0 +1,42 @@
+---
+title: "Audit Trail"
+description: "Every query, schema fetch, and connection event QueryBear handles is logged with who ran it, when, and what came back — full visibility into AI database access."
+---
+
+QueryBear logs every interaction between your AI clients and your databases. When you give an agent — or a non-technical teammate using one — access to production data, the audit trail is how you keep that access accountable.
+
+## What gets logged
+
+For every `run_query` call:
+
+- **Who** — the originating client and account (each MCP client authorizes via OAuth, so calls are attributable).
+- **When** — a precise timestamp.
+- **What** — the full SQL that was executed, including how QueryBear rewrote it (injected `LIMIT`, stripped columns).
+- **Result** — row count returned, execution time, and whether the query succeeded or was rejected.
+- **Why (on rejection)** — which layer blocked it: parser, table allow-list, blocked column, row limit, or timeout.
+
+Schema fetches (`get_schema`) and connection events are logged too.
+
+## Where to find it
+
+Open the **Audit** view in the [QueryBear dashboard](https://querybear.com/dashboard). You can filter by connection, client, time range, and status (success / rejected).
+
+## Why it matters
+
+- **Investigate surprising answers.** If an AI returns something that looks off, you can see the exact query it ran rather than guessing.
+- **Catch prompt injection.** A spike of unusual queries — or a series of rejected ones — is a signal that an agent may be under attack. The audit trail makes that visible.
+- **Accountability at scale.** When a Custom GPT or shared Claude Desktop connector is used across a team, the log shows who asked what.
+- **Compliance.** A complete, immutable record of data access supports least-privilege and auditability requirements.
+
+## Example
+
+```
+#1042  sarah@team.com    2m ago    SELECT users…       ✓ 12 rows · read-only · 87ms
+#1041  ai-agent-3        4m ago    SELECT orders…      ✓  5 rows · read-only · 120ms
+#1039  ai-agent-1       12m ago    SELECT subscriptions…  ✗ blocked · row limit exceeded
+```
+
+## Related
+
+- [Access control](/features/access-control) — the rules each logged query is checked against
+- [Security model](/features/security) — the gateway that enforces and records everything

@@ -1,0 +1,52 @@
+---
+title: "Access Control"
+description: "Control exactly which tables and columns each AI client can read, with enforced row limits and query timeouts — all configured per connection in QueryBear."
+---
+
+Access control is how you scope what an AI client can see and do with your data. It's enforced at the QueryBear gateway, independent of the AI's behavior, so a misbehaving or prompt-injected agent can't reach past the boundaries you set.
+
+## Table allow-list
+
+By default you choose which tables are reachable. Tables you don't enable are **invisible**:
+
+- They don't appear in `get_schema` responses, so the AI doesn't even know they exist.
+- Any query that references them is rejected.
+- New tables added by a migration stay hidden until you explicitly opt them in — so a schema change can't silently widen access.
+
+Configure the allow-list per connection in the dashboard under **Connections → Access**.
+
+## Blocked columns
+
+Mark individual columns as sensitive — password hashes, API tokens, emails, SSNs, anything you don't want leaving your perimeter:
+
+- Blocked columns are **stripped from schema results**, so the AI never sees they exist.
+- If the AI guesses a blocked column name and queries it, the request is rejected.
+- This is the most important control when connecting consumer AI clients (ChatGPT, Claude Desktop) where query results pass through a third-party API.
+
+## Row limits
+
+Every query gets a `LIMIT` injected (default `1000`, configurable per connection). This prevents an agent from:
+
+- Pulling millions of rows into its context window.
+- Running up your egress bill.
+- Accidentally exfiltrating an entire table in one call.
+
+## Query timeouts
+
+A wall-clock timeout (default `30s`) interrupts query execution at the database level. This stops expensive scans the planner might otherwise let run for minutes — protecting your database's performance.
+
+## How it fits together
+
+These controls compose. A typical production setup:
+
+- Allow-list only the tables the use case needs.
+- Block every PII and secret column.
+- Keep the row limit tight (100–1000).
+- Leave the timeout at 30s unless you have known-heavy analytical queries.
+
+The result: the AI gets exactly the read access you intend, and nothing more — even if the agent itself is compromised.
+
+## Related
+
+- [Security model](/features/security) — the read-only gateway these controls build on
+- [Audit trail](/features/audit-trail) — see every query that ran against your rules

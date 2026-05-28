@@ -29,7 +29,3 @@ Preview at `http://localhost:3000`.
 ## Publishing
 
 The Mintlify GitHub app watches this repo. Pushes to `main` deploy automatically to docs.querybear.com.
-
-## TODO
-
-- Replace the placeholder Mintlify logos in `logo/` and `favicon.svg` with QueryBear branding.

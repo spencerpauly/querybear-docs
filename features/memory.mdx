@@ -1,0 +1,34 @@
+---
+title: "Memory"
+description: "QueryBear learns from the queries run against your database over time — inferring conventions, common joins, and domain meaning — and keeps an internal workspace of notes so every query gets smarter."
+---
+
+Memory is how QueryBear gets better at your database the more it's used. Every query that runs through the gateway is a signal: which tables get joined together, how time filters are usually written, what "active user" actually means in practice. QueryBear captures those signals into an internal workspace and uses them to make future queries more accurate — without anyone writing documentation.
+
+## What QueryBear remembers
+
+As queries flow through the gateway, QueryBear maintains a private workspace of inferred knowledge:
+
+- **Common joins** — if `orders` is almost always joined to `users` on `user_id`, QueryBear remembers the relationship even when it isn't a declared foreign key.
+- **Conventions** — recurring filters like `WHERE deleted_at IS NULL` or `status = 'active'` get noted as the usual way to scope a table.
+- **Domain meaning** — when a column is consistently used a certain way (a `cents` amount divided by 100, a status code mapped to a label), that usage is inferred and retained.
+- **Query shapes** — frequently asked questions and the SQL that answered them well.
+
+These notes live in QueryBear's own internal memory for the connection — separate from your data, built entirely from query patterns.
+
+## How it improves queries
+
+When an AI client plans a new query, QueryBear supplements the schema with what it has learned. The effect compounds: the first week, the AI relies on raw schema; a month in, it benefits from the accumulated conventions of everyone who's queried the database. Questions that used to need careful phrasing start "just working."
+
+## Memory vs. custom context
+
+[Custom context](/features/custom-context) is knowledge **you** write down explicitly. Memory is knowledge QueryBear **infers** automatically from real usage. They reinforce each other — anything you annotate is authoritative, and Memory fills in the conventions you never got around to documenting.
+
+## Privacy
+
+Memory is built from query *patterns and structure*, scoped to the connection, and governed by the same [access control](/features/access-control) rules as everything else. It never widens what an AI can read — blocked columns and unlisted tables stay out of memory just as they stay out of schema results.
+
+## Related
+
+- [Custom context](/features/custom-context) — knowledge you define explicitly
+- [Schema detection](/features/schema-detection) — the baseline memory builds on
