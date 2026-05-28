@@ -1,0 +1,49 @@
+---
+title: "Google Cloud SQL MCP Server"
+description: "Connect Google Cloud SQL for PostgreSQL or MySQL to Claude, Cursor, ChatGPT, Codex, and Windsurf with QueryBear — a secure, read-only MCP server."
+---
+
+[Cloud SQL](https://cloud.google.com/sql) is Google Cloud's managed database service for PostgreSQL and MySQL. QueryBear connects over the standard wire protocol, giving your AI clients safe, read-only access through QueryBear's [security gateway](/security).
+
+## Get your Cloud SQL connection details
+
+1. Open the [Cloud SQL instances page](https://console.cloud.google.com/sql/instances).
+2. Select your instance and note the **Public IP address** and port (`5432` Postgres, `3306` MySQL).
+
+## Allow QueryBear's IP
+
+Cloud SQL restricts connections by **Authorized networks**:
+
+1. Get QueryBear's egress IP from the dashboard under **Connections → Network**.
+2. In the Cloud SQL instance → **Connections** → **Networking**, add that IP under **Authorized networks**.
+3. Enable **Public IP** if not already on.
+
+<Tip>
+  Prefer not to expose a public IP? You can run the Cloud SQL Auth Proxy on a host you control and point QueryBear's connector at the proxy. For most read-only analytics setups, an authorized-network public IP with SSL is simpler.
+</Tip>
+
+## Create a read-only user
+
+- **Postgres:** [read-only role SQL](/databases/postgres#create-a-read-only-postgres-role).
+- **MySQL:** [read-only user SQL](/databases/mysql#create-a-read-only-mysql-user).
+
+## Add the connection to QueryBear
+
+In the [QueryBear dashboard](https://querybear.com/dashboard) → **Connections** → **New connection**, choose **PostgreSQL** or **MySQL**, enter the public IP, and set **SSL mode `require`**. Cloud SQL supports server-side TLS.
+
+## Cloud SQL-specific notes
+
+- **Authorized networks:** Connections fail silently if QueryBear's IP isn't allow-listed. This is the most common setup issue.
+- **Read replicas:** Cloud SQL read replicas have their own IPs — point QueryBear at a replica to isolate AI load.
+- **SSL enforcement:** If your instance requires SSL, QueryBear's `require` mode satisfies it.
+
+## Connect to your AI client
+
+Postgres: [Claude Code](/guides/postgres-claude-code) · [Cursor](/guides/postgres-cursor) · [ChatGPT](/guides/postgres-chatgpt)
+MySQL: [Claude Code](/guides/mysql-claude-code) · [Cursor](/guides/mysql-cursor) · [ChatGPT](/guides/mysql-chatgpt)
+
+## Related
+
+- [PostgreSQL MCP server](/databases/postgres)
+- [MySQL MCP server](/databases/mysql)
+- [Security model](/security)

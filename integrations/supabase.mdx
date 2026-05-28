@@ -1,0 +1,50 @@
+---
+title: "Supabase MCP Server"
+description: "Connect your Supabase Postgres database to Claude, Cursor, ChatGPT, Codex, and Windsurf with QueryBear — a secure, read-only MCP server."
+---
+
+[Supabase](https://supabase.com) is an open-source Firebase alternative built on PostgreSQL. Since the database underneath is plain Postgres, QueryBear connects directly and gives your AI clients safe, read-only access through QueryBear's [security gateway](/security).
+
+## Get your Supabase connection details
+
+1. Open your project in the [Supabase dashboard](https://supabase.com/dashboard).
+2. Go to **Project Settings** → **Database**.
+3. Under **Connection string**, choose the **Connection pooler** tab.
+
+Supabase offers connection modes via its pooler (Supavisor):
+
+- **Transaction mode** (port `6543`) — best for serverless / many short connections. Recommended for QueryBear.
+- **Session mode** (port `5432`) — for persistent sessions.
+- **Direct connection** — IPv6 only on some plans; avoid unless you need it.
+
+## Create a read-only role
+
+Run the standard Postgres read-only role SQL from the [PostgreSQL guide](/databases/postgres#create-a-read-only-postgres-role) in Supabase's **SQL Editor**.
+
+<Tip>
+  Supabase stores app data in the `public` schema and auth data in the `auth` schema. Grant the `querybear` role `USAGE` only on the schemas you want the AI to see — and **don't** expose `auth` unless you have a reason to.
+</Tip>
+
+## Add the connection to QueryBear
+
+In the [QueryBear dashboard](https://querybear.com/dashboard) → **Connections** → **New connection** → **PostgreSQL**. Use the pooler host, the database name `postgres`, your `querybear` role, and **SSL mode `require`**.
+
+## Supabase-specific notes
+
+- **Row Level Security (RLS):** RLS policies apply to the role's queries. A read-only role still respects RLS, which can be a useful extra layer.
+- **Block sensitive columns:** Supabase's `auth.users` table holds emails and hashed passwords. Keep the `auth` schema out of the allow-list, or block those columns in QueryBear.
+- **Pooler host:** Prefer transaction-mode pooler (`...pooler.supabase.com:6543`).
+
+## Connect to your AI client
+
+- [Claude Code](/guides/postgres-claude-code)
+- [Claude Desktop](/guides/postgres-claude-desktop)
+- [Cursor](/guides/postgres-cursor)
+- [Codex](/guides/postgres-codex)
+- [Windsurf](/guides/postgres-windsurf)
+- [ChatGPT](/guides/postgres-chatgpt)
+
+## Related
+
+- [PostgreSQL MCP server](/databases/postgres)
+- [Security model](/security)

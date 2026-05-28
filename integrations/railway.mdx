@@ -1,0 +1,46 @@
+---
+title: "Railway Postgres MCP Server"
+description: "Connect a Railway-hosted PostgreSQL database to Claude, Cursor, ChatGPT, Codex, and Windsurf with QueryBear — a secure, read-only MCP server."
+---
+
+[Railway](https://railway.app) is a deployment platform that offers managed PostgreSQL (and MySQL). QueryBear connects over the standard wire protocol, giving your AI clients safe, read-only access through QueryBear's [security gateway](/security).
+
+## Get your Railway connection details
+
+1. Open your project in the [Railway dashboard](https://railway.app).
+2. Click the Postgres service → **Variables** (or **Connect**).
+3. Use the **public** connection variables — Railway exposes a TCP proxy host and port for external access:
+   - `PGHOST` / proxy host (e.g. `containers-us-west-xxx.railway.app`)
+   - `PGPORT` (the proxy port, not `5432`)
+   - `PGDATABASE`, `PGUSER`, `PGPASSWORD`
+
+<Tip>
+  Railway's internal `*.railway.internal` hostnames only resolve inside Railway's network. QueryBear connects from outside, so use the **public TCP proxy** host and port.
+</Tip>
+
+## Create a read-only role
+
+Use the [PostgreSQL read-only role SQL](/databases/postgres#create-a-read-only-postgres-role) via `psql` or Railway's query interface.
+
+## Add the connection to QueryBear
+
+In the [QueryBear dashboard](https://querybear.com/dashboard) → **Connections** → **New connection** → **PostgreSQL**. Use the public proxy host and port, your `querybear` role, and **SSL mode `require`**.
+
+## Railway-specific notes
+
+- **Use the public proxy host/port**, not the internal hostname.
+- **The proxy port is not 5432** — Railway assigns a random external port. Copy it exactly.
+- **MySQL on Railway** works the same way — choose MySQL in QueryBear and use the public proxy details.
+
+## Connect to your AI client
+
+- [Claude Code](/guides/postgres-claude-code)
+- [Cursor](/guides/postgres-cursor)
+- [Codex](/guides/postgres-codex)
+- [Windsurf](/guides/postgres-windsurf)
+- [ChatGPT](/guides/postgres-chatgpt)
+
+## Related
+
+- [PostgreSQL MCP server](/databases/postgres)
+- [Security model](/security)

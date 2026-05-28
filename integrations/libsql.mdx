@@ -1,0 +1,44 @@
+---
+title: "libSQL MCP Server"
+description: "Connect a libSQL database to Claude, Cursor, ChatGPT, Codex, and Windsurf with QueryBear — a secure, read-only MCP server."
+---
+
+[libSQL](https://github.com/tursodatabase/libsql) is an open-source fork of SQLite with added features like a server mode and replication. It's SQLite-compatible, so QueryBear queries it through the same read-only [security gateway](/security) used for local SQLite.
+
+## Connection options
+
+libSQL can run in several modes:
+
+1. **Local file** — a libSQL/SQLite file on disk. Point QueryBear at the file path, exactly like [local SQLite](/databases/sqlite).
+2. **Server mode (`sqld`)** — libSQL running as a server, reachable over an `http://` or `libsql://` URL, optionally with an auth token.
+3. **Hosted (Turso)** — see the dedicated [Turso integration](/integrations/turso).
+
+## Add the connection to QueryBear
+
+In the [QueryBear dashboard](https://querybear.com/dashboard) → **Connections** → **New connection** → **SQLite / libSQL**:
+
+- **Local file:** provide the absolute path to the `.db` / libSQL file.
+- **Server mode:** provide the `http://` / `libsql://` URL (and auth token if your `sqld` requires one).
+
+## libSQL-specific notes
+
+- **Read-only enforced** at the QueryBear gateway. If your `sqld` server supports read-only tokens, use one for defense in depth.
+- **`ATTACH DATABASE` is blocked** at the parser.
+- **SQLite feature parity:** JSON1 functions, FTS5 virtual tables, and views all work.
+
+## Connect to your AI client
+
+Identical to local SQLite:
+
+- [Claude Code](/guides/sqlite-claude-code)
+- [Claude Desktop](/guides/sqlite-claude-desktop)
+- [Cursor](/guides/sqlite-cursor)
+- [Codex](/guides/sqlite-codex)
+- [Windsurf](/guides/sqlite-windsurf)
+- [ChatGPT](/guides/sqlite-chatgpt)
+
+## Related
+
+- [SQLite MCP server](/databases/sqlite)
+- [Turso MCP server](/integrations/turso)
+- [Security model](/security)

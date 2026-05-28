@@ -1,0 +1,51 @@
+---
+title: "AWS Aurora (Postgres) MCP Server"
+description: "Connect Amazon Aurora PostgreSQL to Claude, Cursor, ChatGPT, Codex, and Windsurf with QueryBear — a secure, read-only MCP server."
+---
+
+[Amazon Aurora](https://aws.amazon.com/rds/aurora/) PostgreSQL-Compatible Edition is AWS's high-performance managed Postgres. QueryBear connects over the standard Postgres protocol, giving your AI clients safe, read-only access through QueryBear's [security gateway](/security).
+
+> Using Aurora MySQL-Compatible Edition instead? See [Aurora MySQL](/integrations/aurora-mysql).
+
+## Get your Aurora connection details
+
+Aurora clusters expose two endpoints:
+
+- **Writer (cluster) endpoint** — routes to the primary instance.
+- **Reader endpoint** — load-balances across replicas. **Use this for QueryBear** so AI query load stays off your writer.
+
+Find both in the [RDS console](https://console.aws.amazon.com/rds/) under your Aurora cluster's **Connectivity & security** tab.
+
+## Allow QueryBear's IP
+
+1. Get QueryBear's egress IP from the dashboard under **Connections → Network**.
+2. Add an inbound rule to the cluster's **security group** for that IP on port `5432`.
+3. Ensure the cluster is publicly accessible or reachable via VPC peering / PrivateLink.
+
+## Create a read-only role
+
+Use the [PostgreSQL read-only role SQL](/databases/postgres#create-a-read-only-postgres-role). Run it against the writer endpoint (writes are needed to create the role), then connect QueryBear to the reader endpoint.
+
+## Add the connection to QueryBear
+
+In the [QueryBear dashboard](https://querybear.com/dashboard) → **Connections** → **New connection** → **PostgreSQL**. Use the **reader endpoint**, port `5432`, your `querybear` role, and **SSL mode `require`**.
+
+## Aurora-specific notes
+
+- **Reader endpoint for reads:** Always prefer it for QueryBear — it's purpose-built for read scaling.
+- **TLS:** Aurora supports the Amazon RDS CA bundle; QueryBear connects over TLS.
+- **Auto-scaling replicas:** The reader endpoint handles new replicas transparently.
+
+## Connect to your AI client
+
+- [Claude Code](/guides/postgres-claude-code)
+- [Cursor](/guides/postgres-cursor)
+- [Codex](/guides/postgres-codex)
+- [Windsurf](/guides/postgres-windsurf)
+- [ChatGPT](/guides/postgres-chatgpt)
+
+## Related
+
+- [PostgreSQL MCP server](/databases/postgres)
+- [Amazon RDS MCP server](/integrations/amazon-rds)
+- [Security model](/security)

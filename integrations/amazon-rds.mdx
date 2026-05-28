@@ -1,0 +1,50 @@
+---
+title: "Amazon RDS MCP Server"
+description: "Connect Amazon RDS for PostgreSQL or MySQL to Claude, Cursor, ChatGPT, Codex, and Windsurf with QueryBear — a secure, read-only MCP server."
+---
+
+[Amazon RDS](https://aws.amazon.com/rds/) is AWS's managed relational database service. QueryBear connects to RDS for **PostgreSQL** and **MySQL** over the standard wire protocol, giving your AI clients safe, read-only access through QueryBear's [security gateway](/security).
+
+## Get your RDS connection details
+
+1. Open the [RDS console](https://console.aws.amazon.com/rds/).
+2. Select your database instance.
+3. Copy the **Endpoint** and **Port** from the **Connectivity & security** tab.
+
+<Tip>
+  Point QueryBear at a **read replica** if you have one — keep analytics load off your primary. RDS read replicas use a separate endpoint.
+</Tip>
+
+## Allow QueryBear's IP
+
+RDS instances sit behind a security group. To let QueryBear connect:
+
+1. Find QueryBear's egress IP in the dashboard under **Connections → Network**.
+2. In the RDS instance's **VPC security group**, add an inbound rule allowing that IP on your DB port (`5432` for Postgres, `3306` for MySQL).
+3. Ensure the instance is **publicly accessible**, or set up VPC peering / PrivateLink if you keep it private.
+
+## Create a read-only user
+
+- For **Postgres**, use the [PostgreSQL read-only role SQL](/databases/postgres#create-a-read-only-postgres-role).
+- For **MySQL**, use the [MySQL read-only user SQL](/databases/mysql#create-a-read-only-mysql-user).
+
+## Add the connection to QueryBear
+
+In the [QueryBear dashboard](https://querybear.com/dashboard) → **Connections** → **New connection**, choose **PostgreSQL** or **MySQL**, paste the RDS endpoint, and set **SSL mode `require`**. RDS supports TLS with the Amazon RDS CA out of the box.
+
+## RDS-specific notes
+
+- **SSL/TLS:** RDS supports encrypted connections via the `rds-ca-rsa2048-g1` bundle. QueryBear uses TLS by default.
+- **Read replicas:** Ideal target — isolates AI query load.
+- **Multi-AZ:** Connect to the cluster/instance endpoint; failover is transparent.
+
+## Connect to your AI client
+
+Postgres: [Claude Code](/guides/postgres-claude-code) · [Cursor](/guides/postgres-cursor) · [ChatGPT](/guides/postgres-chatgpt)
+MySQL: [Claude Code](/guides/mysql-claude-code) · [Cursor](/guides/mysql-cursor) · [ChatGPT](/guides/mysql-chatgpt)
+
+## Related
+
+- [PostgreSQL MCP server](/databases/postgres)
+- [MySQL MCP server](/databases/mysql)
+- [Security model](/security)

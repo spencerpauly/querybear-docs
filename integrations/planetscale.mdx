@@ -1,0 +1,41 @@
+---
+title: "PlanetScale MCP Server"
+description: "Connect PlanetScale serverless MySQL to Claude, Cursor, ChatGPT, Codex, and Windsurf with QueryBear — a secure, read-only MCP server."
+---
+
+[PlanetScale](https://planetscale.com) is a serverless MySQL platform built on Vitess, with database branching and online schema changes. QueryBear connects over the standard MySQL protocol, giving your AI clients safe, read-only access through QueryBear's [security gateway](/security).
+
+## Get your PlanetScale connection details
+
+1. Open your database in the [PlanetScale dashboard](https://app.planetscale.com).
+2. Click **Connect**.
+3. Choose **General** (or "Connect with: MySQL") and copy the credentials — host, username, password, and database. PlanetScale generates a dedicated username/password per connection.
+
+## Create a read-only user
+
+PlanetScale manages users through its dashboard rather than raw `CREATE USER`. When generating a password under **Connect**, select a role with **read-only** access if your plan supports it. Otherwise, create the password and rely on QueryBear's gateway to enforce read-only.
+
+## Add the connection to QueryBear
+
+In the [QueryBear dashboard](https://querybear.com/dashboard) → **Connections** → **New connection** → **MySQL**. Enter the PlanetScale host, username, password, database, and set **SSL mode `require`** — PlanetScale **mandates TLS** and rejects unencrypted connections.
+
+## PlanetScale-specific notes
+
+- **TLS is required.** Connections without SSL fail immediately. Always use `require`.
+- **No foreign key constraints by default:** PlanetScale historically disabled FKs (Vitess). This doesn't affect read queries, but your schema may not show FK relationships.
+- **Branching:** Connect QueryBear to a specific branch's credentials to query that branch — e.g. point at a dev branch that's a copy of production.
+- **Multi-statement queries blocked:** QueryBear's parser rejects them regardless of PlanetScale's settings.
+
+## Connect to your AI client
+
+- [Claude Code](/guides/mysql-claude-code)
+- [Claude Desktop](/guides/mysql-claude-desktop)
+- [Cursor](/guides/mysql-cursor)
+- [Codex](/guides/mysql-codex)
+- [Windsurf](/guides/mysql-windsurf)
+- [ChatGPT](/guides/mysql-chatgpt)
+
+## Related
+
+- [MySQL MCP server](/databases/mysql)
+- [Security model](/security)

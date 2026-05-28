@@ -1,0 +1,50 @@
+---
+title: "Neon MCP Server"
+description: "Connect Neon serverless Postgres to Claude, Cursor, ChatGPT, Codex, and Windsurf with QueryBear — a secure, read-only MCP server."
+---
+
+[Neon](https://neon.tech) is serverless PostgreSQL with branching and autoscaling. Because it speaks the standard Postgres wire protocol, QueryBear connects to it like any other Postgres database — giving your AI clients safe, read-only access through QueryBear's [security gateway](/security).
+
+## Get your Neon connection details
+
+1. Open the [Neon console](https://console.neon.tech) and select your project.
+2. On the **Dashboard**, click **Connect**.
+3. Copy the connection string. It looks like:
+   ```
+   postgresql://user:password@ep-xxx-pooler.region.aws.neon.tech/dbname?sslmode=require
+   ```
+
+Neon offers two endpoint types:
+
+- **Pooled** (`-pooler` in the host) — use this for QueryBear. It handles many short-lived connections well.
+- **Direct** — for migrations and long sessions; not needed here.
+
+## Create a read-only role
+
+Run the standard Postgres read-only role SQL from the [PostgreSQL guide](/databases/postgres#create-a-read-only-postgres-role) using Neon's SQL Editor or `psql`. Neon supports roles and `ALTER DEFAULT PRIVILEGES` like any Postgres.
+
+## Add the connection to QueryBear
+
+In the [QueryBear dashboard](https://querybear.com/dashboard) → **Connections** → **New connection** → **PostgreSQL**. Paste the Neon connection string, or fill in host/port/database/user/password. **SSL mode must be `require`** — Neon rejects unencrypted connections.
+
+## Neon-specific notes
+
+- **Branching:** Neon lets you create database branches. Point QueryBear at a branch's connection string to query that branch in isolation — handy for testing against a copy of production.
+- **Autosuspend:** Neon scales compute to zero when idle. The first query after a suspend may take a second to wake the compute. QueryBear's query timeout accommodates this.
+- **Pooled endpoint:** Always prefer the `-pooler` host for QueryBear.
+
+## Connect to your AI client
+
+Once the connection is live, wire up any client — the steps are identical to standard Postgres:
+
+- [Claude Code](/guides/postgres-claude-code)
+- [Claude Desktop](/guides/postgres-claude-desktop)
+- [Cursor](/guides/postgres-cursor)
+- [Codex](/guides/postgres-codex)
+- [Windsurf](/guides/postgres-windsurf)
+- [ChatGPT](/guides/postgres-chatgpt)
+
+## Related
+
+- [PostgreSQL MCP server](/databases/postgres)
+- [Security model](/security)

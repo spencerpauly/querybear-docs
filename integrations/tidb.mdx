@@ -1,0 +1,47 @@
+---
+title: "TiDB MCP Server"
+description: "Connect TiDB / TiDB Cloud to Claude, Cursor, ChatGPT, Codex, and Windsurf with QueryBear — a secure, read-only MCP server."
+---
+
+[TiDB](https://www.pingcap.com/tidb-cloud/) is a distributed SQL database that's wire-compatible with MySQL. QueryBear connects over the MySQL protocol, giving your AI clients safe, read-only access through QueryBear's [security gateway](/security).
+
+## Get your TiDB connection details
+
+1. Open the [TiDB Cloud console](https://tidbcloud.com).
+2. Select your cluster → **Connect**.
+3. Copy the host, port (`4000`), database, username, and password. TiDB Cloud Serverless usernames are prefixed (e.g. `xxxxx.root`).
+
+## Create a read-only user
+
+TiDB supports MySQL-compatible user management. Use the [MySQL read-only user SQL](/databases/mysql#create-a-read-only-mysql-user):
+
+```sql
+CREATE USER 'querybear'@'%' IDENTIFIED BY 'choose-a-strong-one';
+GRANT SELECT ON your_db.* TO 'querybear'@'%';
+GRANT SHOW VIEW ON your_db.* TO 'querybear'@'%';
+FLUSH PRIVILEGES;
+```
+
+## Add the connection to QueryBear
+
+In the [QueryBear dashboard](https://querybear.com/dashboard) → **Connections** → **New connection** → **MySQL**. Enter the TiDB host, **port `4000`**, database, username (with prefix if Serverless), and **SSL mode `require`** — TiDB Cloud requires TLS.
+
+## TiDB-specific notes
+
+- **Port 4000**, not the MySQL default `3306`.
+- **TLS required** on TiDB Cloud Serverless. Use `require`.
+- **Username prefix:** Serverless clusters use a prefixed username — copy it exactly from the console.
+- **Distributed, MySQL-compatible:** `SELECT` queries behave like MySQL. QueryBear's schema introspection handles TiDB's catalog.
+
+## Connect to your AI client
+
+- [Claude Code](/guides/mysql-claude-code)
+- [Cursor](/guides/mysql-cursor)
+- [Codex](/guides/mysql-codex)
+- [Windsurf](/guides/mysql-windsurf)
+- [ChatGPT](/guides/mysql-chatgpt)
+
+## Related
+
+- [MySQL MCP server](/databases/mysql)
+- [Security model](/security)

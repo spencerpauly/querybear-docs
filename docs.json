@@ -24,6 +24,40 @@
         ]
       },
       {
+        "group": "Integrations",
+        "pages": [
+          {
+            "group": "PostgreSQL providers",
+            "pages": [
+              "integrations/neon",
+              "integrations/supabase",
+              "integrations/amazon-rds",
+              "integrations/aws-aurora",
+              "integrations/cloud-sql",
+              "integrations/timescale",
+              "integrations/cockroachdb",
+              "integrations/railway"
+            ]
+          },
+          {
+            "group": "MySQL providers",
+            "pages": [
+              "integrations/planetscale",
+              "integrations/mariadb",
+              "integrations/aurora-mysql",
+              "integrations/tidb"
+            ]
+          },
+          {
+            "group": "SQLite providers",
+            "pages": [
+              "integrations/turso",
+              "integrations/libsql"
+            ]
+          }
+        ]
+      },
+      {
         "group": "AI Clients",
         "pages": [
           "clients/claude-code",

@@ -1,0 +1,40 @@
+---
+title: "Timescale MCP Server"
+description: "Connect TimescaleDB / Timescale Cloud to Claude, Cursor, ChatGPT, Codex, and Windsurf with QueryBear — a secure, read-only MCP server."
+---
+
+[Timescale](https://www.timescale.com) is PostgreSQL extended for time-series and analytics. Because it's Postgres under the hood, QueryBear connects directly and gives your AI clients safe, read-only access through QueryBear's [security gateway](/security).
+
+## Get your Timescale connection details
+
+1. Open the [Timescale console](https://console.cloud.timescale.com).
+2. Select your service → **Connection info**.
+3. Copy the host, port (`5432` or a custom port), database, and credentials, or the full service URL.
+
+## Create a read-only role
+
+Use the standard [PostgreSQL read-only role SQL](/databases/postgres#create-a-read-only-postgres-role). Timescale supports roles and default privileges like any Postgres.
+
+## Add the connection to QueryBear
+
+In the [QueryBear dashboard](https://querybear.com/dashboard) → **Connections** → **New connection** → **PostgreSQL**. Enter the Timescale host/port/database, your `querybear` role, and **SSL mode `require`** (Timescale Cloud enforces TLS).
+
+## Timescale-specific notes
+
+- **Hypertables look like tables:** Timescale's hypertables and continuous aggregates appear in `get_schema` as regular tables/views and are queryable normally. Your AI can run time-bucketed queries against them.
+- **`time_bucket()` and other functions work:** QueryBear's parser permits Timescale's analytical functions.
+- **Read replicas:** If your Timescale service has replicas, point QueryBear at one for isolation.
+- **Great for AI analytics:** Time-series questions like "p95 latency per hour over the last week" are a natural fit — your AI writes the `time_bucket` query, QueryBear runs it safely.
+
+## Connect to your AI client
+
+- [Claude Code](/guides/postgres-claude-code)
+- [Cursor](/guides/postgres-cursor)
+- [Codex](/guides/postgres-codex)
+- [Windsurf](/guides/postgres-windsurf)
+- [ChatGPT](/guides/postgres-chatgpt)
+
+## Related
+
+- [PostgreSQL MCP server](/databases/postgres)
+- [Security model](/security)

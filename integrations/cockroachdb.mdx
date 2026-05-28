@@ -1,0 +1,42 @@
+---
+title: "CockroachDB MCP Server"
+description: "Connect CockroachDB to Claude, Cursor, ChatGPT, Codex, and Windsurf with QueryBear — a secure, read-only MCP server."
+---
+
+[CockroachDB](https://www.cockroachlabs.com) is a distributed SQL database that's wire-compatible with PostgreSQL. QueryBear connects using the Postgres protocol, giving your AI clients safe, read-only access through QueryBear's [security gateway](/security).
+
+## Get your CockroachDB connection details
+
+1. Open the [CockroachDB Cloud console](https://cockroachlabs.cloud).
+2. Select your cluster → **Connect**.
+3. Copy the connection string. It includes a host, port `26257`, database, and SSL parameters.
+
+CockroachDB Cloud connection strings include cluster routing info (e.g. an `options=--cluster=...` parameter for Serverless) — keep that in the connection string.
+
+## Create a read-only role
+
+Use the [PostgreSQL read-only role SQL](/databases/postgres#create-a-read-only-postgres-role). CockroachDB supports `CREATE ROLE`, `GRANT SELECT`, and `ALTER DEFAULT PRIVILEGES` with Postgres-compatible syntax.
+
+## Add the connection to QueryBear
+
+In the [QueryBear dashboard](https://querybear.com/dashboard) → **Connections** → **New connection** → **PostgreSQL**. Use the CockroachDB host, port `26257`, database, your `querybear` role, and **SSL mode `require`** (CockroachDB Cloud mandates TLS).
+
+## CockroachDB-specific notes
+
+- **Port 26257**, not the Postgres default `5432`.
+- **TLS is mandatory** on CockroachDB Cloud. QueryBear's `require` SSL mode handles it.
+- **Cluster routing:** For Serverless clusters, keep the `options=--cluster=<name>` parameter in your connection string.
+- **Postgres-compatible, not identical:** Most `SELECT` queries work unchanged. A few Postgres system catalogs differ; QueryBear's schema introspection handles CockroachDB's catalog.
+
+## Connect to your AI client
+
+- [Claude Code](/guides/postgres-claude-code)
+- [Cursor](/guides/postgres-cursor)
+- [Codex](/guides/postgres-codex)
+- [Windsurf](/guides/postgres-windsurf)
+- [ChatGPT](/guides/postgres-chatgpt)
+
+## Related
+
+- [PostgreSQL MCP server](/databases/postgres)
+- [Security model](/security)

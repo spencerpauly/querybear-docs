@@ -1,0 +1,46 @@
+---
+title: "MariaDB MCP Server"
+description: "Connect MariaDB to Claude, Cursor, ChatGPT, Codex, and Windsurf with QueryBear — a secure, read-only MCP server."
+---
+
+[MariaDB](https://mariadb.org) is a community-developed fork of MySQL, wire-compatible and a drop-in replacement in most setups. QueryBear connects over the MySQL protocol, giving your AI clients safe, read-only access through QueryBear's [security gateway](/security).
+
+## Get your MariaDB connection details
+
+You'll need the host, port (`3306` by default), database name, and credentials. For managed MariaDB (SkySQL, Amazon RDS for MariaDB, Azure, etc.), copy the endpoint from your provider's console.
+
+## Create a read-only user
+
+MariaDB uses MySQL-compatible user management. Run the [MySQL read-only user SQL](/databases/mysql#create-a-read-only-mysql-user):
+
+```sql
+CREATE USER 'querybear'@'%' IDENTIFIED BY 'choose-a-strong-one';
+GRANT SELECT ON your_db.* TO 'querybear'@'%';
+GRANT SHOW VIEW ON your_db.* TO 'querybear'@'%';
+FLUSH PRIVILEGES;
+```
+
+## Add the connection to QueryBear
+
+In the [QueryBear dashboard](https://querybear.com/dashboard) → **Connections** → **New connection** → **MySQL**. Enter the MariaDB host/port/database/user/password and set **SSL mode `require`** for any remote connection.
+
+## MariaDB-specific notes
+
+- **Choose MySQL** as the connection type in QueryBear — MariaDB speaks the same protocol.
+- **MariaDB-specific syntax works:** Sequences, `RETURNING` on some statements, and other MariaDB extensions don't affect read-only `SELECT` queries.
+- **JSON functions:** MariaDB's JSON functions are supported.
+- **Multi-statement queries blocked** at the parser, as with all engines.
+
+## Connect to your AI client
+
+- [Claude Code](/guides/mysql-claude-code)
+- [Claude Desktop](/guides/mysql-claude-desktop)
+- [Cursor](/guides/mysql-cursor)
+- [Codex](/guides/mysql-codex)
+- [Windsurf](/guides/mysql-windsurf)
+- [ChatGPT](/guides/mysql-chatgpt)
+
+## Related
+
+- [MySQL MCP server](/databases/mysql)
+- [Security model](/security)

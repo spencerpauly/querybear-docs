@@ -1,0 +1,48 @@
+---
+title: "Turso MCP Server"
+description: "Connect Turso (libSQL / SQLite) to Claude, Cursor, ChatGPT, Codex, and Windsurf with QueryBear — a secure, read-only MCP server."
+---
+
+[Turso](https://turso.tech) is an edge database built on [libSQL](https://github.com/tursodatabase/libsql), an open-source fork of SQLite. It's SQLite-compatible, so QueryBear can query it through the same read-only [security gateway](/security) used for local SQLite.
+
+## Connection options
+
+Turso databases can be reached two ways:
+
+1. **Remote (libSQL URL + auth token)** — the database lives on Turso's edge. You connect with a `libsql://` URL and an auth token.
+2. **Embedded replica / local file** — if you sync a Turso database to a local SQLite file, point QueryBear at that file like any [local SQLite database](/databases/sqlite).
+
+## Get your Turso connection details
+
+1. Install the [Turso CLI](https://docs.turso.tech/cli) and run `turso db show <database>` to get the database URL (`libsql://<db>-<org>.turso.io`).
+2. Create an auth token: `turso db tokens create <database>`.
+
+## Add the connection to QueryBear
+
+In the [QueryBear dashboard](https://querybear.com/dashboard) → **Connections** → **New connection** → **SQLite / libSQL**:
+
+- For **remote** Turso: provide the `libsql://` URL and auth token.
+- For an **embedded replica**: provide the absolute path to the synced local file.
+
+## Turso-specific notes
+
+- **Read-only is enforced** at the QueryBear gateway regardless of the token's scope. For defense in depth, generate a **read-only auth token** in Turso.
+- **`ATTACH DATABASE` is blocked** at the parser, as with all SQLite connections.
+- **Edge latency:** Remote queries hit the nearest Turso replica. QueryBear's query timeout accommodates network round-trips.
+
+## Connect to your AI client
+
+The client setup is identical to local SQLite:
+
+- [Claude Code](/guides/sqlite-claude-code)
+- [Claude Desktop](/guides/sqlite-claude-desktop)
+- [Cursor](/guides/sqlite-cursor)
+- [Codex](/guides/sqlite-codex)
+- [Windsurf](/guides/sqlite-windsurf)
+- [ChatGPT](/guides/sqlite-chatgpt)
+
+## Related
+
+- [SQLite MCP server](/databases/sqlite)
+- [libSQL MCP server](/integrations/libsql)
+- [Security model](/security)

@@ -1,0 +1,51 @@
+---
+title: "Aurora MySQL MCP Server"
+description: "Connect Amazon Aurora MySQL to Claude, Cursor, ChatGPT, Codex, and Windsurf with QueryBear — a secure, read-only MCP server."
+---
+
+[Amazon Aurora](https://aws.amazon.com/rds/aurora/) MySQL-Compatible Edition is AWS's high-performance managed MySQL. QueryBear connects over the standard MySQL protocol, giving your AI clients safe, read-only access through QueryBear's [security gateway](/security).
+
+> Using Aurora PostgreSQL-Compatible Edition? See [AWS Aurora (Postgres)](/integrations/aws-aurora).
+
+## Get your Aurora MySQL connection details
+
+Aurora clusters expose two endpoints:
+
+- **Writer (cluster) endpoint** — the primary instance.
+- **Reader endpoint** — load-balances across replicas. **Use this for QueryBear.**
+
+Find both in the [RDS console](https://console.aws.amazon.com/rds/) under your Aurora cluster's **Connectivity & security** tab. The MySQL port is `3306`.
+
+## Allow QueryBear's IP
+
+1. Get QueryBear's egress IP from the dashboard under **Connections → Network**.
+2. Add an inbound rule to the cluster's **security group** for that IP on port `3306`.
+3. Ensure the cluster is publicly accessible or reachable via VPC peering / PrivateLink.
+
+## Create a read-only user
+
+Use the [MySQL read-only user SQL](/databases/mysql#create-a-read-only-mysql-user). Run it against the writer endpoint, then connect QueryBear to the reader endpoint.
+
+## Add the connection to QueryBear
+
+In the [QueryBear dashboard](https://querybear.com/dashboard) → **Connections** → **New connection** → **MySQL**. Use the **reader endpoint**, port `3306`, your `querybear` user, and **SSL mode `require`**.
+
+## Aurora MySQL-specific notes
+
+- **Reader endpoint for reads:** Keeps AI query load off the writer.
+- **TLS:** Aurora supports the Amazon RDS CA bundle; QueryBear connects over TLS.
+- **Multi-statement queries blocked** at the parser.
+
+## Connect to your AI client
+
+- [Claude Code](/guides/mysql-claude-code)
+- [Cursor](/guides/mysql-cursor)
+- [Codex](/guides/mysql-codex)
+- [Windsurf](/guides/mysql-windsurf)
+- [ChatGPT](/guides/mysql-chatgpt)
+
+## Related
+
+- [MySQL MCP server](/databases/mysql)
+- [Amazon RDS MCP server](/integrations/amazon-rds)
+- [Security model](/security)
