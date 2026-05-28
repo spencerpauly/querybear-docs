@@ -1,0 +1,84 @@
+---
+title: "Windsurf"
+description: "Connect Windsurf to your PostgreSQL, MySQL, or SQLite database using QueryBear's secure MCP server. Add as a custom MCP server in settings."
+---
+
+**[Windsurf](https://codeium.com/windsurf)** is Codeium's AI-first code editor. It supports MCP servers via its settings UI — paste in a JSON snippet and Windsurf's Cascade agent gets access.
+
+## Why QueryBear + Windsurf
+
+Windsurf's Cascade agent shines on long-running, multi-step tasks. The more it can see, the better its plans. QueryBear lets Cascade:
+
+- Reference real database schemas when writing or refactoring data access code.
+- Verify the impact of a migration before suggesting one.
+- Look up specific rows when debugging customer reports.
+- Generate analytics queries on demand.
+
+…without ever giving the agent write access or visibility into sensitive columns.
+
+## Setup
+
+In Windsurf:
+
+<Steps>
+  <Step title="Open Settings">
+    **Settings** → **MCP Servers** → **Add custom server**.
+  </Step>
+  <Step title="Paste the QueryBear config">
+    ```json
+    {
+      "mcpServers": {
+        "querybear": {
+          "serverUrl": "https://mcp.querybear.com/mcp"
+        }
+      }
+    }
+    ```
+
+    Note Windsurf uses `serverUrl`, not `url` — easy to miss if you're copy-pasting from a Cursor config.
+  </Step>
+  <Step title="Save and authorize">
+    Save the settings. The first time Cascade calls a QueryBear tool, Windsurf opens a browser for OAuth. Approve, and Windsurf is linked to your QueryBear account.
+  </Step>
+</Steps>
+
+## Verify
+
+In Cascade, ask:
+
+> *"What QueryBear tools do you have?"*
+
+You should see `list_connections`, `get_schema`, and `run_query`.
+
+## Per-database setup guides
+
+<CardGroup cols={2}>
+  <Card title="PostgreSQL + Windsurf" href="/guides/postgres-windsurf">
+    Step-by-step Postgres setup, including read-only role SQL.
+  </Card>
+  <Card title="MySQL + Windsurf" href="/guides/mysql-windsurf">
+    Step-by-step MySQL setup, including read-only user SQL.
+  </Card>
+  <Card title="SQLite + Windsurf" href="/guides/sqlite-windsurf">
+    Local SQLite file setup.
+  </Card>
+</CardGroup>
+
+## Tips for using QueryBear in Windsurf
+
+- **Cascade plans before it acts.** For database work, ask Cascade to "outline the queries you'd run first" before letting it execute. You get a free preview of what's about to hit your DB.
+- **Use the connection name in prompts.** *"Using the staging connection, list tables that have a `deleted_at` column"* — saves time vs. letting Cascade enumerate.
+- **Cascade is multi-step.** Watch for it to call `get_schema` → `run_query` → `get_schema` → `run_query`. This is normal and produces better answers than one-shot prompts.
+- **QueryBear's audit log captures every call.** Useful for post-mortems when Cascade does something surprising.
+
+## Common workflows
+
+- *"Refactor this query to use a window function. First, run both versions against production and compare row counts."*
+- *"Add an index recommendation: pull the 10 slowest queries from `pg_stat_statements`, then suggest indexes that would help."*
+- *"Audit the `users` table for rows that violate the new email-uniqueness constraint we're about to add."*
+
+## Related
+
+- [Quickstart](/quickstart) — full QueryBear setup
+- [Security model](/security) — what the gateway enforces
+- [Cursor](/clients/cursor) — the other AI-first code editor

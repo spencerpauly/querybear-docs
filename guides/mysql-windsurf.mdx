@@ -1,0 +1,74 @@
+---
+title: "MySQL + Windsurf"
+description: "How to set up a secure MySQL MCP server for Windsurf using QueryBear. Add as a custom MCP server in Windsurf settings. Step-by-step with read-only user and example queries."
+---
+
+This guide walks through connecting **MySQL** (or MariaDB) to **[Windsurf](https://codeium.com/windsurf)** using QueryBear's managed MCP server. End result: Windsurf's Cascade agent can query your MySQL database while it codes.
+
+## What you'll need
+
+- A QueryBear account ([sign up free](https://querybear.com/signup))
+- A MySQL or MariaDB database (5.7+ / 10.x+)
+- Windsurf installed
+
+## Step 1: Create a read-only MySQL user
+
+```sql
+CREATE USER 'querybear'@'%' IDENTIFIED BY 'choose-a-strong-one';
+GRANT SELECT ON your_db.* TO 'querybear'@'%';
+GRANT SHOW VIEW ON your_db.* TO 'querybear'@'%';
+FLUSH PRIVILEGES;
+```
+
+## Step 2: Add the connection to QueryBear
+
+[Dashboard](https://querybear.com/dashboard) → **Connections** → **New connection** → **MySQL**, with the credentials from Step 1.
+
+## Step 3: Add QueryBear to Windsurf
+
+<Steps>
+  <Step title="Open Windsurf Settings">
+    **Settings** → **MCP Servers** → **Add custom server**.
+  </Step>
+  <Step title="Paste the config">
+    ```json
+    {
+      "mcpServers": {
+        "querybear": {
+          "serverUrl": "https://mcp.querybear.com/mcp"
+        }
+      }
+    }
+    ```
+
+    Windsurf uses `serverUrl` — easy to miss if you're copy-pasting from Cursor.
+  </Step>
+  <Step title="Save and authorize">
+    First QueryBear tool call triggers OAuth in browser.
+  </Step>
+</Steps>
+
+## Step 4: Verify
+
+In Cascade:
+
+> *"What QueryBear tools do you have? List my connections."*
+
+## Try it
+
+> *"In our MySQL DB, find users who signed up but never completed onboarding. Outline the queries you'd run first."*
+
+Cascade plans the query (`SELECT u.* FROM users u LEFT JOIN onboarding_events o ... WHERE o.id IS NULL`), gets your go-ahead, then runs it through QueryBear.
+
+## MySQL + Windsurf gotchas
+
+- **`serverUrl` not `url`.** Top mistake — Cursor uses `url`, Windsurf uses `serverUrl`.
+- **Cascade multi-steps** — `get_schema` → `run_query` → maybe `get_schema` again. Normal.
+- **For RDS or IP-restricted MySQL**, allow QueryBear's egress IP in your security group.
+- **Multi-statement queries are blocked** at the parser.
+
+## Related
+
+- [MySQL MCP server](/databases/mysql) — MySQL-specific deep dive
+- [Windsurf client](/clients/windsurf) — Windsurf overview
+- [Security model](/security) — what the gateway protects against

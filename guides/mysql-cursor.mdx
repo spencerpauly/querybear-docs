@@ -1,0 +1,67 @@
+---
+title: "MySQL + Cursor"
+description: "How to set up a secure MySQL MCP server for Cursor using QueryBear. Drop into .cursor/mcp.json. Step-by-step with read-only user and example queries."
+---
+
+This guide walks through connecting **MySQL** (or MariaDB) to **[Cursor](https://cursor.com)** using QueryBear's managed MCP server. End result: Cursor's chat and composer can query your MySQL database while you code.
+
+## What you'll need
+
+- A QueryBear account ([sign up free](https://querybear.com/signup))
+- A MySQL or MariaDB database (5.7+ / 10.x+)
+- Cursor with MCP support
+
+## Step 1: Create a read-only MySQL user
+
+```sql
+CREATE USER 'querybear'@'%' IDENTIFIED BY 'choose-a-strong-one';
+GRANT SELECT ON your_db.* TO 'querybear'@'%';
+GRANT SHOW VIEW ON your_db.* TO 'querybear'@'%';
+FLUSH PRIVILEGES;
+```
+
+## Step 2: Add the connection to QueryBear
+
+[Dashboard](https://querybear.com/dashboard) → **Connections** → **New connection** → **MySQL**, with the credentials from Step 1.
+
+## Step 3: Add QueryBear to Cursor
+
+`.cursor/mcp.json` in your project root (or `~/.cursor/mcp.json` globally):
+
+```json
+{
+  "mcpServers": {
+    "querybear": {
+      "url": "https://mcp.querybear.com/mcp"
+    }
+  }
+}
+```
+
+## Step 4: Authorize and verify
+
+Open Cursor. First QueryBear tool call triggers OAuth in browser.
+
+In chat:
+
+> *"What QueryBear tools do you have? List my connections."*
+
+## Try it
+
+> *"I'm adding a unique constraint on `users.email`. Check production for duplicate emails first."*
+
+Cursor calls `get_schema` for `users`, writes `SELECT email, COUNT(*) FROM users GROUP BY email HAVING COUNT(*) > 1`, and runs it through QueryBear.
+
+## MySQL + Cursor gotchas
+
+- **`.cursor/mcp.json` is project-scoped** — keep different DBs for different projects.
+- **Cursor's built-in MySQL support is separate from MCP** — both can coexist.
+- **Cursor caches MCP server status** — restart Cursor after editing config.
+- **For PlanetScale**, the TLS-mandatory connection string from their dashboard works as-is.
+- **Multi-statement queries are blocked** — even if Cursor writes one.
+
+## Related
+
+- [MySQL MCP server](/databases/mysql) — MySQL-specific deep dive
+- [Cursor client](/clients/cursor) — Cursor overview
+- [Security model](/security) — what the gateway protects against

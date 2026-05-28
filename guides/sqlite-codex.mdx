@@ -1,0 +1,51 @@
+---
+title: "SQLite + Codex"
+description: "How to set up a secure SQLite MCP server for OpenAI's Codex CLI using QueryBear. Add to ~/.codex/config.toml. Step-by-step with file path and example queries."
+---
+
+This guide walks through connecting a **SQLite** file to **Codex** (OpenAI's terminal coding agent) using QueryBear's managed MCP server.
+
+## What you'll need
+
+- A QueryBear account ([sign up free](https://querybear.com/signup))
+- A SQLite file
+- Codex CLI installed
+
+## Step 1: Add the SQLite connection to QueryBear
+
+[Dashboard](https://querybear.com/dashboard) → **Connections** → **New connection** → **SQLite**, with the file path.
+
+## Step 2: Add QueryBear to Codex
+
+`~/.codex/config.toml`:
+
+```toml
+[mcp_servers.querybear]
+type = "http"
+url = "https://mcp.querybear.com/mcp"
+```
+
+Restart the Codex CLI.
+
+## Step 3: Authorize and verify
+
+Start a Codex session. First tool call opens OAuth in browser.
+
+> *"What QueryBear tools do you have? List my connections."*
+
+## Try it
+
+> *"In the local analytics.sqlite DB, give me daily active users for the last 30 days."*
+
+## SQLite + Codex gotchas
+
+- **TOML typos silently disable the server.** Re-check the block if `querybear` doesn't appear in the tool list.
+- **Restart Codex CLI fully** after editing config.
+- **`ATTACH DATABASE` is blocked** at the parser.
+- **Most `PRAGMA` statements are restricted** to safe ones.
+
+## Related
+
+- [SQLite MCP server](/databases/sqlite) — SQLite-specific deep dive
+- [Codex client](/clients/codex) — Codex overview
+- [Security model](/security) — what the gateway protects against

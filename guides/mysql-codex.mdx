@@ -1,0 +1,62 @@
+---
+title: "MySQL + Codex"
+description: "How to set up a secure MySQL MCP server for OpenAI's Codex CLI using QueryBear. Add to ~/.codex/config.toml. Step-by-step with read-only user and example queries."
+---
+
+This guide walks through connecting **MySQL** (or MariaDB) to **Codex** (OpenAI's terminal coding agent) using QueryBear's managed MCP server.
+
+## What you'll need
+
+- A QueryBear account ([sign up free](https://querybear.com/signup))
+- A MySQL or MariaDB database (5.7+ / 10.x+)
+- Codex CLI installed
+
+## Step 1: Create a read-only MySQL user
+
+```sql
+CREATE USER 'querybear'@'%' IDENTIFIED BY 'choose-a-strong-one';
+GRANT SELECT ON your_db.* TO 'querybear'@'%';
+GRANT SHOW VIEW ON your_db.* TO 'querybear'@'%';
+FLUSH PRIVILEGES;
+```
+
+## Step 2: Add the connection to QueryBear
+
+[Dashboard](https://querybear.com/dashboard) → **Connections** → **New connection** → **MySQL**, with the credentials from Step 1.
+
+## Step 3: Add QueryBear to Codex
+
+`~/.codex/config.toml`:
+
+```toml
+[mcp_servers.querybear]
+type = "http"
+url = "https://mcp.querybear.com/mcp"
+```
+
+Restart the Codex CLI.
+
+## Step 4: Authorize and verify
+
+Start a Codex session. First tool call opens OAuth in browser.
+
+> *"What QueryBear tools do you have? List my connections."*
+
+## Try it
+
+> *"In our MySQL DB, find the orders that had a refund processed in the last 7 days. Include order id, customer, refund amount, and reason."*
+
+Codex calls `get_schema`, joins `orders` and `refunds`, and returns the result.
+
+## MySQL + Codex gotchas
+
+- **TOML typos silently disable the server.** If `querybear` doesn't appear in the tool list, re-check the TOML block.
+- **Restart Codex CLI fully** after editing config — it caches MCP discovery on startup.
+- **Multi-statement and stored procedure calls are blocked.** Allow-list specific procedures per connection if needed.
+- **Name the connection** in your prompt (*"using the prod connection..."*) to skip `list_connections`.
+
+## Related
+
+- [MySQL MCP server](/databases/mysql) — MySQL-specific deep dive
+- [Codex client](/clients/codex) — Codex overview
+- [Security model](/security) — what the gateway protects against

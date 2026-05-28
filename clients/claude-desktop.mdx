@@ -1,0 +1,79 @@
+---
+title: "Claude Desktop"
+description: "Connect Claude Desktop to your PostgreSQL, MySQL, or SQLite database using QueryBear's secure MCP server. Add as a Custom Connector."
+---
+
+**Claude Desktop** is Anthropic's macOS/Windows app for Claude. Recent versions support **Custom Connectors** — Anthropic's term for adding an MCP server through the UI. QueryBear works as a Custom Connector, so any conversation in Claude Desktop can query your database.
+
+## Why QueryBear + Claude Desktop
+
+Claude Desktop is the most accessible AI client for non-technical teammates. Wiring up QueryBear means:
+
+- Product managers can ask *"how many free users have over 1000 events?"* and get an answer without bothering an engineer.
+- Customer success can look up a user's account state mid-conversation with a customer.
+- Founders can sanity-check headline metrics during board prep.
+
+Because QueryBear enforces the security boundary (allow-listed tables, blocked columns, audit log), giving Claude Desktop database access doesn't mean giving every team member raw SQL access to production.
+
+## Setup
+
+In Claude Desktop:
+
+<Steps>
+  <Step title="Open Settings">
+    Click your profile → **Settings** → **Connectors**.
+  </Step>
+  <Step title="Add custom connector">
+    Click **Add custom connector**.
+  </Step>
+  <Step title="Enter the QueryBear URL">
+    | Field | Value |
+    |---|---|
+    | Name | `querybear` |
+    | URL | `https://mcp.querybear.com/mcp` |
+  </Step>
+  <Step title="Authorize">
+    Claude Desktop opens a browser tab for OAuth. Approve, and Claude is linked to your QueryBear account.
+  </Step>
+</Steps>
+
+## Verify
+
+In a new Claude Desktop conversation, ask:
+
+> *"What QueryBear tools do you have?"*
+
+You should see `list_connections`, `get_schema`, and `run_query`.
+
+## Per-database setup guides
+
+<CardGroup cols={2}>
+  <Card title="PostgreSQL + Claude Desktop" href="/guides/postgres-claude-desktop">
+    Step-by-step Postgres setup, including read-only role SQL.
+  </Card>
+  <Card title="MySQL + Claude Desktop" href="/guides/mysql-claude-desktop">
+    Step-by-step MySQL setup, including read-only user SQL.
+  </Card>
+  <Card title="SQLite + Claude Desktop" href="/guides/sqlite-claude-desktop">
+    Local SQLite file setup.
+  </Card>
+</CardGroup>
+
+## Tips for using QueryBear in Claude Desktop
+
+- **Pin frequently-used connections.** In the QueryBear dashboard, mark a connection as default — Claude Desktop uses it without needing to call `list_connections`.
+- **Build Projects around specific databases.** Claude's "Project" feature lets you scope context. Create a project per database with a system prompt like *"Always use the production connection. Always call get_schema before writing SQL."*
+- **The audit log is your safety net.** When a non-technical user asks Claude to look something up, the SQL is logged. Review periodically.
+- **For sensitive data, use column blocks.** Anything Claude reads goes to Anthropic's API. Block PII at the QueryBear connection level so it never reaches the model.
+
+## Common workflows
+
+- *"How many customers downgraded this month and what did they downgrade from?"*
+- *"Show me the 10 most recent failed payments and the user emails."* (If `email` is column-blocked, Claude will return user IDs instead.)
+- *"What's the average time from signup to first purchase, broken down by referral source?"*
+
+## Related
+
+- [Quickstart](/quickstart) — full QueryBear setup
+- [Security model](/security) — what the gateway enforces
+- [Claude Code](/clients/claude-code) — Anthropic's terminal CLI sibling

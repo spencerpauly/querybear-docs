@@ -1,0 +1,59 @@
+---
+title: "SQLite + Claude Desktop"
+description: "How to set up a secure SQLite MCP server for Claude Desktop using QueryBear. Add as a Custom Connector. Step-by-step with file path and example queries."
+---
+
+This guide walks through connecting a **SQLite** file to **Claude Desktop** using QueryBear's managed MCP server. End result: Claude Desktop can query a local SQLite database from the chat UI.
+
+## What you'll need
+
+- A QueryBear account ([sign up free](https://querybear.com/signup))
+- A SQLite file
+- Claude Desktop installed
+
+## Step 1: Add the SQLite connection to QueryBear
+
+[Dashboard](https://querybear.com/dashboard) → **Connections** → **New connection** → **SQLite**:
+
+- **File path** — absolute path on the machine running the QueryBear connector.
+
+## Step 2: Add QueryBear to Claude Desktop
+
+<Steps>
+  <Step title="Open Settings → Connectors">
+    Profile → **Settings** → **Connectors**.
+  </Step>
+  <Step title="Add custom connector">
+    Click **Add custom connector**.
+  </Step>
+  <Step title="Fill in the form">
+    | Field | Value |
+    |---|---|
+    | Name | `querybear` |
+    | URL | `https://mcp.querybear.com/mcp` |
+  </Step>
+  <Step title="Authorize">
+    OAuth opens in browser. Approve.
+  </Step>
+</Steps>
+
+## Step 3: Verify
+
+> *"What QueryBear tools do you have? List my connections."*
+
+## Try it
+
+> *"In the local SQLite DB, find the 5 longest support sessions and the resolution status of each."*
+
+## SQLite + Claude Desktop gotchas
+
+- **The SQLite file must be reachable from QueryBear's connector**, not from Claude Desktop. If your file is on a server, run QueryBear there; if it's local, the connector reads it locally.
+- **Always copy DB files** that other apps own (Apple Notes, browsers). Locking conflicts can be subtle.
+- **`ATTACH DATABASE` is blocked** at the parser.
+- **Block sensitive content** at the QueryBear level — anything Claude reads goes to Anthropic's API.
+
+## Related
+
+- [SQLite MCP server](/databases/sqlite) — SQLite-specific deep dive
+- [Claude Desktop client](/clients/claude-desktop) — Claude Desktop overview
+- [Security model](/security) — what the gateway protects against

@@ -1,0 +1,65 @@
+---
+title: "SQLite + Claude Code"
+description: "How to set up a secure SQLite MCP server for Claude Code using QueryBear. Step-by-step setup with file path, one-line CLI install, and example queries."
+---
+
+This guide walks through connecting a **SQLite** file to **[Claude Code](https://claude.com/claude-code)** using QueryBear's managed MCP server. End result: Claude Code can query a local SQLite database safely — read-only, no `ATTACH DATABASE`, every query logged.
+
+## What you'll need
+
+- A QueryBear account ([sign up free](https://querybear.com/signup))
+- A SQLite file (`.sqlite`, `.db`, etc.)
+- Claude Code installed
+
+## Step 1: Add the SQLite connection to QueryBear
+
+In the [QueryBear dashboard](https://querybear.com/dashboard) → **Connections** → **New connection** → **SQLite**:
+
+- **File path** — absolute path on the machine running the QueryBear connector (e.g. `/Users/alice/data/analytics.sqlite`).
+
+<Warning>
+  If you're querying a database file that another app has open (Apple Notes, browser history, an Electron app), copy the file first: `cp original.sqlite /tmp/analytics-copy.sqlite`. QueryBear opens read-only, but defensive copy avoids lock issues.
+</Warning>
+
+## Step 2: Add QueryBear to Claude Code
+
+```bash
+claude mcp add --transport http querybear https://mcp.querybear.com/mcp
+```
+
+## Step 3: Authorize and verify
+
+```bash
+claude
+```
+
+OAuth opens in browser. Approve. Then:
+
+> *"What QueryBear tools do you have? List my connections."*
+
+## Try it
+
+> *"In the analytics SQLite DB, find the top 10 user agents by session count last week."*
+
+Claude calls `get_schema`, writes the query, and runs it through QueryBear.
+
+## SQLite + Claude Code gotchas
+
+- **`ATTACH DATABASE` is blocked.** Even if Claude writes one, QueryBear rejects it at the parser. Without this block, an injected prompt could attach `/etc/passwd` as a database.
+- **Most `PRAGMA` statements are restricted** to a safe allow-list. Schema-introspection pragmas work; runtime-modifying ones are blocked.
+- **WAL mode is respected** — if the source app is actively writing, QueryBear's read-only access doesn't interfere.
+- **JSON1 functions work** (`json_extract`, `->`, `->>`).
+- **FTS5 virtual tables** are queryable.
+
+## Use cases
+
+- **Analyze Apple Notes:** `~/Library/Group Containers/group.com.apple.notes/NoteStore.sqlite` (back up first).
+- **Browser history:** Chrome's `History` file, Firefox's `places.sqlite`.
+- **Electron app debugging.**
+- **Shipped datasets** in SQLite format.
+
+## Related
+
+- [SQLite MCP server](/databases/sqlite) — SQLite-specific deep dive
+- [Claude Code client](/clients/claude-code) — Claude Code overview
+- [Security model](/security) — what the gateway protects against

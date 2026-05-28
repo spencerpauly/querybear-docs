@@ -1,0 +1,79 @@
+---
+title: "SQLite MCP Server"
+description: "Connect SQLite to Claude, Cursor, ChatGPT, Codex, Windsurf, and Claude Desktop with QueryBear — a secure, read-only SQLite MCP server."
+---
+
+QueryBear is a managed **SQLite MCP server**. Point QueryBear at a local SQLite file and any MCP-capable AI client can query it through a hardened read-only gateway. Useful for analyzing local databases, embedded application data, or shipped-with-app SQLite stores like Apple Notes, browser histories, or Electron apps.
+
+Works with **SQLite 3.x** (any modern version).
+
+## Why a SQLite MCP server
+
+SQLite is everywhere — it powers your phone, your browser history, most native macOS apps, Electron desktop apps, mobile games, and countless internal tools. When you want an AI to analyze one of these files, the usual options are:
+
+1. **Open it in a SQLite GUI and copy/paste schemas into ChatGPT.** Tedious.
+2. **Let the agent execute arbitrary `sqlite3` CLI calls.** Risky — `sqlite3` can mutate the file and run `ATTACH DATABASE` to read arbitrary other files on disk.
+3. **Build a custom tool.** Overkill for one-off analysis.
+
+QueryBear gives you the third option as a service: drop in the MCP endpoint, point it at a SQLite file, and the agent can introspect schema and run `SELECT` queries — nothing else.
+
+## How SQLite connections work
+
+Unlike Postgres or MySQL, SQLite is **file-based**. QueryBear runs a local connector that reads the file directly. The MCP protocol still flows through the QueryBear cloud, but the database file never leaves your machine.
+
+This means:
+
+- The file path must be reachable from the machine running the QueryBear connector (your laptop, your server).
+- Concurrent writers (e.g. an app actively using the same file) are handled correctly via SQLite's WAL mode — QueryBear opens read-only.
+- Network databases are not relevant — SQLite is local by nature.
+
+## Add a SQLite connection
+
+In the QueryBear dashboard, add a new SQLite connection:
+
+- **File path** — absolute path on the machine running the QueryBear connector (e.g. `/Users/alice/data/analytics.sqlite`).
+- **Read mode** — locked to read-only. Even `PRAGMA writable_schema = 1` is rejected.
+
+## SQLite-specific notes
+
+- **`ATTACH DATABASE` is blocked.** Otherwise an injected agent could attach `/etc/passwd` and read it via SQL.
+- **`PRAGMA` statements are restricted** to a safe allow-list. Schema-introspection pragmas are permitted; anything that changes runtime behavior is blocked.
+- **WAL mode is respected.** Concurrent writers (e.g. the Electron app that owns the DB) keep working.
+- **JSON1 functions work** — `json_extract`, `->`, `->>`, etc.
+- **FTS5 virtual tables** are queryable like regular tables.
+- **Views are first-class.**
+
+## Common SQLite use cases with QueryBear
+
+- **Analyze Apple Notes** — `~/Library/Group Containers/group.com.apple.notes/NoteStore.sqlite`. (Backup first.)
+- **Browser history analysis** — Chrome's `History` file, Firefox's `places.sqlite`.
+- **Electron app debugging** — many apps store state in SQLite.
+- **Local analytics dashboards** — DuckDB and SQLite are common formats for shipped datasets.
+- **Embedded application telemetry** — IoT devices, point-of-sale systems, kiosks.
+
+<Warning>
+  Always copy a SQLite file before exploring it. SQLite locks can interact poorly with apps that have the file open. QueryBear opens read-only, but defensive copy is good hygiene.
+</Warning>
+
+## Connect SQLite to your AI client
+
+<CardGroup cols={2}>
+  <Card title="Claude Code" href="/guides/sqlite-claude-code">
+    One-line CLI setup. Query SQLite from `claude` in the terminal.
+  </Card>
+  <Card title="Claude Desktop" href="/guides/sqlite-claude-desktop">
+    Custom connector in Claude's desktop app.
+  </Card>
+  <Card title="Cursor" href="/guides/sqlite-cursor">
+    Drop into `.cursor/mcp.json`. Query SQLite while pairing with Cursor.
+  </Card>
+  <Card title="Codex" href="/guides/sqlite-codex">
+    Add to `~/.codex/config.toml`. SQLite access in Codex CLI.
+  </Card>
+  <Card title="Windsurf" href="/guides/sqlite-windsurf">
+    Add as a custom MCP server in Windsurf settings.
+  </Card>
+  <Card title="ChatGPT" href="/guides/sqlite-chatgpt">
+    Custom connector in ChatGPT (developer mode).
+  </Card>
+</CardGroup>

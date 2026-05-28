@@ -1,55 +1,35 @@
-# Mintlify Starter Kit
+# QueryBear Docs
 
-Use the starter kit to get your docs deployed and ready to customize.
+Public documentation for [QueryBear](https://querybear.com) — a secure, read-only MCP server for PostgreSQL, MySQL, and SQLite. Built on [Mintlify](https://mintlify.com).
 
-Click the green **Use this template** button at the top of this repo to copy the Mintlify starter kit. The starter kit contains examples with
+Deployed to **docs.querybear.com**.
 
-- Guide pages
-- Navigation
-- Customizations
-- API reference pages
-- Use of popular components
+> Source of truth: this repo. The main app lives in the private `spencerpauly/querybear` monorepo; docs were split out here so the free Mintlify tier (public repo) can host them.
 
-**[Follow the full quickstart guide](https://starter.mintlify.com/quickstart)**
+## Structure
 
-## AI-assisted writing
+- `docs.json` — site config (theme, navigation, branding)
+- `index.mdx` — introduction / landing
+- `what-is-mcp.mdx`, `quickstart.mdx`, `security.mdx` — top-level pages
+- `databases/` — per-database guides (Postgres, MySQL, SQLite)
+- `clients/` — per-AI-client guides (Claude Code, Claude Desktop, Cursor, Codex, Windsurf, ChatGPT)
+- `guides/` — the database × client setup matrix (18 pages)
 
-Set up your AI coding tool to work with Mintlify:
+## Local preview
+
+Install the Mintlify CLI and run from the repo root:
 
 ```bash
-npx skills add https://mintlify.com/docs
-```
-
-This command installs Mintlify's documentation skill for your configured AI tools like Claude Code, Cursor, Windsurf, and others. The skill includes component reference, writing standards, and workflow guidance.
-
-See the [AI tools guides](/ai-tools) for tool-specific setup.
-
-## Development
-
-Install the [Mintlify CLI](https://www.npmjs.com/package/mint) to preview your documentation changes locally. To install, use the following command:
-
-```
 npm i -g mint
-```
-
-Run the following command at the root of your documentation, where your `docs.json` is located:
-
-```
 mint dev
 ```
 
-View your local preview at `http://localhost:3000`.
+Preview at `http://localhost:3000`.
 
-## Publishing changes
+## Publishing
 
-Install our GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app) to propagate changes from your repo to your deployment. Changes are deployed to production automatically after pushing to the default branch.
+The Mintlify GitHub app watches this repo. Pushes to `main` deploy automatically to docs.querybear.com.
 
-## Need help?
+## TODO
 
-### Troubleshooting
-
-- If your dev environment isn't running: Run `mint update` to ensure you have the most recent version of the CLI.
-- If a page loads as a 404: Make sure you are running in a folder with a valid `docs.json`.
-
-### Resources
-- [Mintlify documentation](https://mintlify.com/docs)
+- Replace the placeholder Mintlify logos in `logo/` and `favicon.svg` with QueryBear branding.

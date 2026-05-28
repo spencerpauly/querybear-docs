@@ -1,0 +1,64 @@
+---
+title: "SQLite + Windsurf"
+description: "How to set up a secure SQLite MCP server for Windsurf using QueryBear. Add as a custom MCP server in Windsurf settings. Step-by-step with file path and example queries."
+---
+
+This guide walks through connecting a **SQLite** file to **[Windsurf](https://codeium.com/windsurf)** using QueryBear's managed MCP server.
+
+## What you'll need
+
+- A QueryBear account ([sign up free](https://querybear.com/signup))
+- A SQLite file
+- Windsurf installed
+
+## Step 1: Add the SQLite connection to QueryBear
+
+[Dashboard](https://querybear.com/dashboard) → **Connections** → **New connection** → **SQLite**, with the file path.
+
+## Step 2: Add QueryBear to Windsurf
+
+<Steps>
+  <Step title="Open Windsurf Settings">
+    **Settings** → **MCP Servers** → **Add custom server**.
+  </Step>
+  <Step title="Paste the config">
+    ```json
+    {
+      "mcpServers": {
+        "querybear": {
+          "serverUrl": "https://mcp.querybear.com/mcp"
+        }
+      }
+    }
+    ```
+
+    Windsurf uses `serverUrl`, not `url`.
+  </Step>
+  <Step title="Save and authorize">
+    First QueryBear tool call triggers OAuth in browser.
+  </Step>
+</Steps>
+
+## Step 3: Verify
+
+In Cascade:
+
+> *"What QueryBear tools do you have? List my connections."*
+
+## Try it
+
+> *"In the local SQLite analytics DB, find sessions where the user bounced after viewing only one page. Outline the queries you'd run first."*
+
+Cascade plans, you approve, it runs the query via QueryBear.
+
+## SQLite + Windsurf gotchas
+
+- **`serverUrl` not `url`.** Cursor uses `url`; Windsurf uses `serverUrl`.
+- **`ATTACH DATABASE` is blocked** at the parser.
+- **Cascade may call `get_schema` multiple times** for big DBs — normal.
+
+## Related
+
+- [SQLite MCP server](/databases/sqlite) — SQLite-specific deep dive
+- [Windsurf client](/clients/windsurf) — Windsurf overview
+- [Security model](/security) — what the gateway protects against

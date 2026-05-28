@@ -1,0 +1,68 @@
+---
+title: "MySQL + Claude Code"
+description: "How to set up a secure MySQL MCP server for Claude Code using QueryBear. Step-by-step setup with read-only user, one-line CLI install, and example queries."
+---
+
+This guide walks through connecting **MySQL** (or MariaDB) to **[Claude Code](https://claude.com/claude-code)** using QueryBear's managed MCP server. End result: your terminal Claude session can read your MySQL database safely — no write access, no sensitive columns, every query logged.
+
+## What you'll need
+
+- A QueryBear account ([sign up free](https://querybear.com/signup))
+- A MySQL or MariaDB database (5.7+ / 10.x+)
+- Claude Code installed
+
+## Step 1: Create a read-only MySQL user
+
+```sql
+CREATE USER 'querybear'@'%' IDENTIFIED BY 'choose-a-strong-one';
+GRANT SELECT ON your_db.* TO 'querybear'@'%';
+GRANT SHOW VIEW ON your_db.* TO 'querybear'@'%';
+FLUSH PRIVILEGES;
+```
+
+If your MySQL provider restricts `'%'` (AWS RDS, sometimes), replace it with QueryBear's egress IP — found in the dashboard under **Connections → Network**.
+
+## Step 2: Add the connection to QueryBear
+
+In the [QueryBear dashboard](https://querybear.com/dashboard) → **Connections** → **New connection** → **MySQL**:
+
+- **Host**, **Port** (3306), **Database**, **User** (`querybear`), **Password**
+- **SSL mode** — `require` for any non-localhost connection
+
+## Step 3: Add QueryBear to Claude Code
+
+```bash
+claude mcp add --transport http querybear https://mcp.querybear.com/mcp
+```
+
+## Step 4: Authorize and verify
+
+```bash
+claude
+```
+
+The first tool call opens OAuth in browser. Approve. Then ask:
+
+> *"What QueryBear tools do you have? List my connections."*
+
+You should see your MySQL connection.
+
+## Try it
+
+> *"In the production MySQL database, find the top 10 products by units sold last month. Pull the schema first."*
+
+Claude calls `get_schema` on `products` and `orders`, writes the join + group-by query, and runs it through QueryBear.
+
+## MySQL + Claude Code gotchas
+
+- **Multi-statement queries are blocked.** `SELECT 1; DROP TABLE x;` is rejected at the parser even though MySQL would happily run both.
+- **Stored procedure calls are blocked by default** — procs can mutate state. Allow-list explicitly per connection if needed.
+- **MariaDB sequence syntax works** transparently.
+- **JSON columns work** — `JSON_EXTRACT`, `->`, `->>` are allowed.
+- **For PlanetScale**, use the connection string from their dashboard. TLS is mandatory.
+
+## Related
+
+- [MySQL MCP server](/databases/mysql) — MySQL-specific deep dive
+- [Claude Code client](/clients/claude-code) — Claude Code overview
+- [Security model](/security) — what the gateway protects against

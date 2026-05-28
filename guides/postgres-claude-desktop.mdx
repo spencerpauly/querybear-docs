@@ -1,0 +1,87 @@
+---
+title: "PostgreSQL + Claude Desktop"
+description: "How to set up a secure PostgreSQL MCP server for Claude Desktop using QueryBear. Add as a Custom Connector. Step-by-step with read-only role and example queries."
+---
+
+This guide walks through connecting **PostgreSQL** to **Claude Desktop** (Anthropic's macOS/Windows chat app) using QueryBear's managed MCP server. End result: any Claude Desktop conversation can query your Postgres database safely — perfect for non-technical teammates.
+
+## What you'll need
+
+- A QueryBear account ([sign up free](https://querybear.com/signup))
+- A PostgreSQL database (any version 12+)
+- Claude Desktop installed and signed in
+
+## Step 1: Create a read-only PostgreSQL role
+
+Run this as a Postgres superuser:
+
+```sql
+CREATE ROLE querybear LOGIN PASSWORD 'choose-a-strong-one';
+GRANT CONNECT ON DATABASE your_db TO querybear;
+GRANT USAGE ON SCHEMA public TO querybear;
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO querybear;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public
+  GRANT SELECT ON TABLES TO querybear;
+```
+
+QueryBear's gateway is already read-only — this role is belt-and-suspenders.
+
+## Step 2: Add the connection to QueryBear
+
+In the [QueryBear dashboard](https://querybear.com/dashboard) → **Connections** → **New connection** → **PostgreSQL**:
+
+- **Host** — e.g. `db.example.com` or your RDS endpoint
+- **Port** — `5432`
+- **Database**
+- **User** — `querybear`
+- **Password** — from Step 1
+- **SSL mode** — `require`
+
+Use the **Access** tab to allow-list tables and block sensitive columns. This is especially important for Claude Desktop since the data may be seen by non-technical users.
+
+## Step 3: Add QueryBear to Claude Desktop
+
+<Steps>
+  <Step title="Open Settings → Connectors">
+    Click your profile in the bottom-left → **Settings** → **Connectors**.
+  </Step>
+  <Step title="Add custom connector">
+    Click **Add custom connector**.
+  </Step>
+  <Step title="Fill in the form">
+    | Field | Value |
+    |---|---|
+    | Name | `querybear` |
+    | URL | `https://mcp.querybear.com/mcp` |
+  </Step>
+  <Step title="Authorize">
+    Claude Desktop opens an OAuth browser tab. Approve.
+  </Step>
+</Steps>
+
+## Step 4: Verify
+
+Start a new conversation in Claude Desktop:
+
+> *"What QueryBear tools do you have, and what connections are available?"*
+
+You should see `list_connections`, `get_schema`, `run_query`, and your Postgres connection.
+
+## Try it
+
+> *"Look up user with id 1842 — show their plan, signup date, and last 5 logins. Use the production connection."*
+
+Claude calls `get_schema`, joins the relevant tables, queries Postgres through QueryBear, and answers.
+
+## Postgres + Claude Desktop gotchas
+
+- **OAuth scope is per Claude Desktop install**, so if you have Claude on multiple machines, each authorizes separately.
+- **For non-technical users**, set up a **default connection** in QueryBear so Claude doesn't need `list_connections` every time.
+- **Block PII columns aggressively** — anything Claude reads goes to Anthropic's API. Block `email`, `address`, `phone`, `ssn` at the QueryBear level if those are in your DB.
+- **Audit log is essential** when sharing access. The QueryBear dashboard logs every query, with timestamp and originating client.
+
+## Related
+
+- [PostgreSQL MCP server](/databases/postgres) — Postgres-specific deep dive
+- [Claude Desktop client](/clients/claude-desktop) — Claude Desktop overview
+- [Security model](/security) — what the gateway protects against

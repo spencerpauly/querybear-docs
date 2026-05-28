@@ -1,47 +1,87 @@
 ---
 title: "Quickstart"
-description: "Begin with a guide on the fastest path to a successful outcome"
+description: "Connect a database to QueryBear and query it from Claude, Cursor, or any MCP-capable AI client in under 5 minutes."
 ---
 
-Describe how someone begins using your product. What is the first thing they need to do? Are there any prerequisites?
-
-A quickstart should take someone from zero to using your product. They'll get a quick win and a sense of what they can accomplish.
+This quickstart gets you from zero to *"ask the AI a question about your data"* in about 5 minutes.
 
 ## Prerequisites
 
-Before you begin, you must have:
+- A [QueryBear account](https://querybear.com/signup) (free tier works).
+- A database to connect (PostgreSQL, MySQL, or SQLite).
+- One of the supported [AI clients](/clients/claude-code).
 
-- Requirement one (for example, Node.js 18+, a free account, an API key)
-- Requirement two (for example, a compatible device, a compatible browser, a compatible operating system)
+## 1. Add a connection in the dashboard
 
-## Get started
+Go to [querybear.com/dashboard](https://querybear.com/dashboard) → **Connections** → **New connection**.
 
-<Steps>
-  <Step title="Install">
-    Describe how to install your product or sign up.
+Choose your database type and either paste a connection string or fill in the fields:
 
-    ```bash
-    npm install your-package
-    ```
-  </Step>
-  <Step title="Configure">
-    Describe any setup or configuration needed before first use.
+- **Host** — your database host (e.g. `db.example.com` or `127.0.0.1`)
+- **Port** — `5432` (Postgres), `3306` (MySQL)
+- **Database name**
+- **User / password** — use a read-only role (see [security](/security))
+- **SSL mode** — `require` recommended for any remote DB
 
-    ```bash
-    your-cli init
-    ```
-  </Step>
-  <Step title="Run it">
-    Show the first thing a user does to see it working.
-
-    ```bash
-    your-cli start
-    ```
-  </Step>
-</Steps>
+For SQLite, you instead point QueryBear at the file path.
 
 <Tip>
-  Give people a way to get help. This could be a link to a support page, a chat with a customer support agent, or a forum for your product.
-
-  Example: Need help? Reach out to us at [support@yourcompany.com](mailto:support@yourcompany.com).
+  For production databases, create a dedicated read-only user. QueryBear's gateway is read-only by design, but a least-privilege DB role is belt-and-suspenders. See the [Postgres](/databases/postgres), [MySQL](/databases/mysql), or [SQLite](/databases/sqlite) page for the exact `CREATE ROLE` SQL.
 </Tip>
+
+## 2. Configure access rules
+
+After connecting, QueryBear pulls your schema. You can then:
+
+- **Allow-list tables** — only checked tables are visible to the agent. Default is "all tables."
+- **Block columns** — mark sensitive columns (password hashes, API keys, PII). They're stripped from schema responses and any query mentioning them is rejected.
+- **Set a row limit** — every query gets `LIMIT n` enforced. Default `1000`.
+- **Set a query timeout** — long-running queries are killed. Default `30s`.
+
+## 3. Wire up your AI client
+
+In the dashboard, open the **MCP Config** tab on your connection. Pick your client — Claude Code, Claude Desktop, Cursor, Codex, Windsurf, or ChatGPT — and copy the one-line config.
+
+For example, Claude Code:
+
+```bash
+claude mcp add --transport http querybear https://mcp.querybear.com/mcp
+```
+
+Full per-client instructions: [Claude Code](/clients/claude-code) · [Claude Desktop](/clients/claude-desktop) · [Cursor](/clients/cursor) · [Codex](/clients/codex) · [Windsurf](/clients/windsurf) · [ChatGPT](/clients/chatgpt).
+
+## 4. Authorize the client
+
+The first tool call from your client triggers an OAuth flow — QueryBear opens a browser tab and asks you to grant the client access to your connections. Approve, and you're done.
+
+## 5. Ask a question
+
+In your AI client, try:
+
+> *"What QueryBear tools are available?"*
+
+You should see `list_connections`, `get_schema`, and `run_query`.
+
+Then try something real:
+
+> *"How many users signed up in the last 7 days?"*
+
+The agent will:
+
+1. Call `get_schema` to learn your tables.
+2. Write a SQL query.
+3. Call `run_query`, which runs the query through QueryBear's security pipeline.
+4. Return the result.
+
+You can see every query the agent ran in the dashboard under **Audit log**.
+
+## What's next?
+
+<CardGroup>
+  <Card title="Setup guides by combination" href="/guides/postgres-claude-code">
+    Step-by-step guides for every database × AI client combination.
+  </Card>
+  <Card title="Security model" href="/security">
+    Understand exactly what the gateway protects against.
+  </Card>
+</CardGroup>

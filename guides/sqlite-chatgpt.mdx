@@ -1,0 +1,57 @@
+---
+title: "SQLite + ChatGPT"
+description: "How to set up a secure SQLite MCP server for ChatGPT using QueryBear. Add as a Custom Connector in developer mode. Step-by-step with file path and example queries."
+---
+
+This guide walks through connecting a **SQLite** file to **ChatGPT** using QueryBear's managed MCP server.
+
+## What you'll need
+
+- A QueryBear account ([sign up free](https://querybear.com/signup))
+- A SQLite file
+- ChatGPT Plus/Team/Enterprise (developer mode required)
+
+## Step 1: Add the SQLite connection to QueryBear
+
+[Dashboard](https://querybear.com/dashboard) → **Connections** → **New connection** → **SQLite**, with the file path. Block sensitive columns aggressively — anything ChatGPT reads goes through OpenAI's API.
+
+## Step 2: Add QueryBear to ChatGPT
+
+<Steps>
+  <Step title="Enable developer mode">
+    **Settings** → **Connectors** → **Advanced** → enable **Developer mode**.
+  </Step>
+  <Step title="Add custom connector">
+    **Add connector** → **Custom connector**.
+  </Step>
+  <Step title="Fill in the form">
+    | Field | Value |
+    |---|---|
+    | Name | `querybear` |
+    | URL | `https://mcp.querybear.com/mcp` |
+  </Step>
+  <Step title="Authorize">
+    OAuth opens in browser. Approve.
+  </Step>
+</Steps>
+
+## Step 3: Verify
+
+> *"What QueryBear tools do you have? List my connections."*
+
+## Try it
+
+> *"In the local SQLite DB, find the most common error message in the logs table over the past 24 hours."*
+
+## SQLite + ChatGPT gotchas
+
+- **Free ChatGPT doesn't support Custom Connectors.** Plus, Team, or Enterprise required.
+- **`ATTACH DATABASE` blocked** at the parser.
+- **Block sensitive content at the QueryBear level** — ChatGPT conversations may persist in OpenAI's systems.
+- **The QueryBear connector must run on a machine that can read the file.** For team SQLite analysis, host the file on a shared machine running the connector.
+
+## Related
+
+- [SQLite MCP server](/databases/sqlite) — SQLite-specific deep dive
+- [ChatGPT client](/clients/chatgpt) — ChatGPT overview
+- [Security model](/security) — what the gateway protects against

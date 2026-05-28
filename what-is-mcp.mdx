@@ -1,0 +1,67 @@
+---
+title: "What is MCP?"
+description: "Model Context Protocol is the open standard that lets AI assistants like Claude, Cursor, and ChatGPT call external tools and read external data. QueryBear is an MCP server for databases."
+---
+
+**MCP (Model Context Protocol)** is an open standard, originally published by Anthropic, that defines how AI assistants connect to external tools and data sources. If REST is how web apps talk to servers, MCP is how AI agents talk to the rest of your world.
+
+Before MCP, every AI client invented its own plugin system. Claude had Claude tools, ChatGPT had plugins (and then GPTs, and then Custom Connectors), Cursor had extensions, and so on — none of them interoperable. MCP collapses all of that into a single specification: any client that "speaks MCP" can talk to any server that speaks MCP.
+
+## How MCP works (in 30 seconds)
+
+An MCP server exposes three things to an MCP client:
+
+1. **Tools** — functions the AI can call. (For QueryBear: `list_connections`, `get_schema`, `run_query`.)
+2. **Resources** — pieces of data the AI can read. (For QueryBear: your database schemas.)
+3. **Prompts** — pre-defined prompt templates the user can invoke.
+
+The client (Claude Code, Cursor, etc.) discovers what's available on the server at startup, then forwards relevant tool calls when the AI asks for them. Results flow back into the AI's context.
+
+## Why MCP matters for databases
+
+Until MCP, hooking up an AI to a database meant one of three bad options:
+
+- **Hand-roll an integration per client.** Write a Claude tool. Write a separate ChatGPT plugin. Rewrite both when the API changes.
+- **Give the AI a shell.** Let it run `psql` directly. Pray.
+- **Build a chat UI yourself.** Tightly couple your AI to a custom frontend you have to maintain.
+
+MCP unifies this. A single MCP server (like QueryBear) works in every MCP client — Claude Code, Claude Desktop, Cursor, Codex, Windsurf, ChatGPT — without per-client glue.
+
+## MCP transports
+
+MCP runs over two transports:
+
+- **stdio** — the client spawns the server as a subprocess and pipes JSON-RPC over stdin/stdout. Best for local-only tools (file system, git).
+- **HTTP / SSE** — the server runs as a remote service the client connects to. Best for tools that need credentials, persistence, or shared state across users.
+
+QueryBear uses the **HTTP transport** (`https://mcp.querybear.com/mcp`). This means:
+
+- No local install of a database driver or QueryBear CLI required.
+- Connection credentials are stored once in the QueryBear dashboard, not in every client's config file.
+- The same connection works across your laptop, your team's laptops, and any other device you add the MCP server to.
+
+## What's the alternative to QueryBear?
+
+You can run an MCP server yourself. Anthropic [previously published](https://querybear.com/blog/anthropic-postgres-mcp-archived) reference MCP servers for Postgres, but they archived them — pointing users at managed options for a reason: the hard part isn't the protocol, it's the security model.
+
+If you do roll your own, you'll need to handle:
+
+- A SQL parser that distinguishes `SELECT` from `WITH ... INSERT` (CTEs can hide writes).
+- Column-level redaction.
+- Per-table allow-listing that survives schema changes.
+- Query timeouts that interrupt long-running planner work, not just network reads.
+- An audit log that survives the agent crashing mid-query.
+- OAuth so each client's calls are attributable.
+
+That's what QueryBear does.
+
+## Learn more
+
+<CardGroup>
+  <Card title="Quickstart" href="/quickstart">
+    Hook up your first database in 5 minutes.
+  </Card>
+  <Card title="Security model" href="/security">
+    How QueryBear protects your DB from misbehaving agents.
+  </Card>
+</CardGroup>

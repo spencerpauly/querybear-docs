@@ -1,0 +1,90 @@
+---
+title: "MySQL MCP Server"
+description: "Connect MySQL or MariaDB to Claude, Cursor, ChatGPT, Codex, Windsurf, and Claude Desktop with QueryBear — a managed, secure, read-only MySQL MCP server."
+---
+
+QueryBear is a managed **MySQL MCP server**. Add the QueryBear MCP endpoint to your AI client and it can query your MySQL or MariaDB database through a hardened read-only gateway — no local install, no credentials in client config files, no chance of the agent corrupting data.
+
+Works with **MySQL 5.7+, MySQL 8.x, and MariaDB 10.x+**, including managed MySQL on AWS RDS, Aurora MySQL, Google Cloud SQL, Azure Database for MySQL, PlanetScale, and DigitalOcean.
+
+## Why a MySQL MCP server (vs. raw `mysql` access)
+
+Giving an agent a MySQL connection string is the same gun you'd hand a junior dev with no review process. Even a read-only MySQL user solves only the most obvious problem:
+
+- A prompt-injected agent can `SELECT * FROM users WHERE email LIKE '%@enterprise.com'` and exfiltrate your customer list.
+- An agent can `SELECT *` from a billion-row events table and saturate your binlog replicas.
+- Sensitive columns like `password_hash`, `bcrypt_cost`, `2fa_secret`, `address_line_1` are all visible to anything with `SELECT` permission.
+
+QueryBear adds:
+
+- A SQL parser that rejects writes at the gateway layer, including multi-statement attempts and stored procedure calls that mutate state.
+- Per-table allow-listing — new tables added by migrations stay invisible until you opt them in.
+- Per-column block lists — sensitive columns are stripped from the schema the agent sees.
+- Row limits and query timeouts.
+- Full audit log.
+
+See the [security model](/security) for details.
+
+## Create a read-only MySQL user
+
+QueryBear's gateway enforces read-only, but a least-privilege MySQL user is belt-and-suspenders. Run this as a user with `GRANT` privileges:
+
+```sql
+-- Create the user. Use a strong password.
+CREATE USER 'querybear'@'%' IDENTIFIED BY 'choose-a-strong-one';
+
+-- Grant SELECT only — no INSERT, UPDATE, DELETE, DDL, or admin.
+GRANT SELECT ON your_db.* TO 'querybear'@'%';
+
+-- Allow reading schema metadata
+GRANT SHOW VIEW ON your_db.* TO 'querybear'@'%';
+
+FLUSH PRIVILEGES;
+```
+
+If you're using AWS RDS or another managed provider that restricts `'%'`, replace it with QueryBear's egress IP (find this in the dashboard under **Connections → Network**).
+
+## Connection settings
+
+In the QueryBear dashboard, add a new MySQL connection:
+
+- **Host** — e.g. `db.example.com`, your RDS endpoint, or PlanetScale host
+- **Port** — `3306` by default
+- **Database**
+- **User** — `querybear` (the user above)
+- **Password**
+- **SSL mode** — `require` for any non-localhost connection
+
+For PlanetScale, use the connection string from their dashboard's **Connect → MySQL** view — TLS is mandatory there.
+
+## MySQL-specific notes
+
+- **Multi-statement queries are rejected.** `SELECT 1; DROP TABLE users;` fails at the parser, even though MySQL would happily execute both.
+- **Stored procedure calls are rejected by default.** Procedures can mutate state, so they're blocked unless explicitly allow-listed per connection.
+- **`information_schema` is read for schema discovery** but not query-allow-listed unless you opt in.
+- **MariaDB is fully supported.** Sequence syntax and other MariaDB-specific features work transparently.
+- **JSON columns work.** Functions like `JSON_EXTRACT`, `->`, `->>` are allowed.
+- **Views and materialized views appear in `get_schema`** and are queryable like tables.
+
+## Connect MySQL to your AI client
+
+<CardGroup cols={2}>
+  <Card title="Claude Code" href="/guides/mysql-claude-code">
+    One-line CLI setup. Query MySQL from `claude` in the terminal.
+  </Card>
+  <Card title="Claude Desktop" href="/guides/mysql-claude-desktop">
+    Custom connector in Claude's desktop app.
+  </Card>
+  <Card title="Cursor" href="/guides/mysql-cursor">
+    Drop into `.cursor/mcp.json`. Query your DB while pairing with Cursor.
+  </Card>
+  <Card title="Codex" href="/guides/mysql-codex">
+    Add to `~/.codex/config.toml`. MySQL access in Codex CLI.
+  </Card>
+  <Card title="Windsurf" href="/guides/mysql-windsurf">
+    Add as a custom MCP server in Windsurf settings.
+  </Card>
+  <Card title="ChatGPT" href="/guides/mysql-chatgpt">
+    Custom connector in ChatGPT (developer mode).
+  </Card>
+</CardGroup>

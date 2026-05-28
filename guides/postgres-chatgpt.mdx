@@ -1,0 +1,87 @@
+---
+title: "PostgreSQL + ChatGPT"
+description: "How to set up a secure PostgreSQL MCP server for ChatGPT using QueryBear. Add as a Custom Connector in developer mode. Step-by-step with read-only role and example queries."
+---
+
+This guide walks through connecting **PostgreSQL** to **ChatGPT** using QueryBear's managed MCP server. End result: ChatGPT can answer real questions about your Postgres data — useful for sales, support, exec prep, and anyone who wants to ask a database question in natural language.
+
+## What you'll need
+
+- A QueryBear account ([sign up free](https://querybear.com/signup))
+- A PostgreSQL database (any version 12+)
+- A ChatGPT account (Plus, Team, or Enterprise — developer mode required)
+
+## Step 1: Create a read-only PostgreSQL role
+
+```sql
+CREATE ROLE querybear LOGIN PASSWORD 'choose-a-strong-one';
+GRANT CONNECT ON DATABASE your_db TO querybear;
+GRANT USAGE ON SCHEMA public TO querybear;
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO querybear;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public
+  GRANT SELECT ON TABLES TO querybear;
+```
+
+## Step 2: Add the connection to QueryBear
+
+In the [QueryBear dashboard](https://querybear.com/dashboard) → **Connections** → **New connection** → **PostgreSQL**, with the credentials from Step 1.
+
+**For ChatGPT specifically**, set the column block list aggressively — anything ChatGPT reads goes through OpenAI's API. Block `email`, `phone`, `address`, `password_hash`, and any other PII at the QueryBear level so it never leaves your perimeter.
+
+## Step 3: Add QueryBear to ChatGPT
+
+<Steps>
+  <Step title="Enable developer mode">
+    **Settings** → **Connectors** → **Advanced** → enable **Developer mode**.
+  </Step>
+  <Step title="Add custom connector">
+    Click **Add connector** → **Custom connector**.
+  </Step>
+  <Step title="Fill in the form">
+    | Field | Value |
+    |---|---|
+    | Name | `querybear` |
+    | URL | `https://mcp.querybear.com/mcp` |
+  </Step>
+  <Step title="Authorize">
+    OAuth opens in browser. Approve.
+  </Step>
+</Steps>
+
+## Step 4: Verify
+
+In a new ChatGPT conversation:
+
+> *"What QueryBear tools do you have? List my connections."*
+
+You should see `list_connections`, `get_schema`, `run_query`, and your Postgres connection.
+
+## Try it
+
+> *"In our production Postgres, how many users signed up in each of the last 12 months, broken down by signup source? Format as a markdown table."*
+
+ChatGPT calls `get_schema` to find the right tables, writes the SQL, calls `run_query`, and formats the result.
+
+## Productionize for team use
+
+For non-technical teammates, build a **Custom GPT** with QueryBear as a connector:
+
+1. Create a Custom GPT in ChatGPT's GPT builder.
+2. Add the QueryBear connector.
+3. System prompt: *"You are a data assistant for \{company\}. Always use the production connection. Always call get_schema before writing SQL. Format results as markdown tables."*
+4. Share the GPT link with your team.
+
+The audit log in the QueryBear dashboard shows every query, so you can see exactly what your team is asking.
+
+## Postgres + ChatGPT gotchas
+
+- **Custom Connectors require ChatGPT Plus/Team/Enterprise and developer mode.** The free tier doesn't support them.
+- **Column blocks are non-negotiable for PII.** Once ChatGPT sees a value, you can't un-see it. Block PII at QueryBear, not in your prompt.
+- **The row limit (default 1000)** prevents accidental large reads. Raise it per-connection if you have legitimate "give me everything" use cases.
+- **OAuth tokens are scoped per ChatGPT account.** Revoke in QueryBear dashboard if needed.
+
+## Related
+
+- [PostgreSQL MCP server](/databases/postgres) — Postgres-specific deep dive
+- [ChatGPT client](/clients/chatgpt) — ChatGPT overview
+- [Security model](/security) — what the gateway protects against

@@ -1,0 +1,100 @@
+---
+title: "PostgreSQL MCP Server"
+description: "Connect PostgreSQL to Claude, Cursor, ChatGPT, Codex, Windsurf, and Claude Desktop with QueryBear — a managed, secure, read-only Postgres MCP server."
+---
+
+QueryBear is a managed **Postgres MCP server**. Drop the QueryBear MCP endpoint into your AI client and it can query your PostgreSQL database through a hardened read-only gateway. No local install, no credentials in client config files, and no risk of the agent running a destructive query.
+
+Works with PostgreSQL **12 and newer**, including managed Postgres on AWS RDS, Google Cloud SQL, Azure Database for PostgreSQL, Supabase, Neon, Render, Railway, Fly.io, and Heroku.
+
+## Why a Postgres MCP server (vs. raw `psql`)
+
+Without a gateway, hooking an AI to Postgres means one of two things:
+
+1. **Give the agent direct DB credentials** — convenient and catastrophic. The agent can `DROP TABLE`, read every column of every table, and accidentally run scans that DoS your replica.
+2. **Use a read-only role** — solves writes but nothing else. The agent still sees every table, every column (including `password_hash`, `email`, `api_key`), and can still run unbounded scans.
+
+QueryBear gives you:
+
+- A SQL parser that rejects writes at the gateway layer, including writes hidden inside CTEs.
+- Per-table allow-listing — new tables stay invisible until you opt them in.
+- Per-column block lists — sensitive columns are stripped from the schema the agent sees.
+- Row limits and query timeouts.
+- Full audit log.
+
+See the [security model](/security) for the full threat list.
+
+## Create a read-only Postgres role
+
+QueryBear's gateway is read-only by design, but a least-privilege DB role is belt-and-suspenders. Run this as a Postgres superuser:
+
+```sql
+-- Create the role
+CREATE ROLE querybear LOGIN PASSWORD 'choose-a-strong-one';
+
+-- Allow connecting to the database
+GRANT CONNECT ON DATABASE your_db TO querybear;
+
+-- Grant schema usage
+GRANT USAGE ON SCHEMA public TO querybear;
+
+-- Read access to existing tables
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO querybear;
+
+-- Read access to future tables (so you don't have to re-grant after migrations)
+ALTER DEFAULT PRIVILEGES IN SCHEMA public
+  GRANT SELECT ON TABLES TO querybear;
+
+-- Read access to existing and future sequences (some ORMs query these)
+GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO querybear;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public
+  GRANT SELECT ON SEQUENCES TO querybear;
+```
+
+If you use schemas other than `public`, repeat the `GRANT USAGE` and `ALTER DEFAULT PRIVILEGES` for each.
+
+## Connection settings
+
+In the QueryBear dashboard, add a new PostgreSQL connection:
+
+- **Host** — e.g. `db.example.com`, your RDS endpoint, or Supabase pooler URL
+- **Port** — `5432` by default
+- **Database**
+- **User** — `querybear` (the role above)
+- **Password**
+- **SSL mode** — `require` for any non-localhost connection
+
+For managed Postgres providers, QueryBear knows the right SSL settings — just paste the connection string.
+
+## Postgres-specific notes
+
+- **CTEs with writes are rejected.** `WITH x AS (DELETE FROM ...) SELECT * FROM x` is a real Postgres feature. The QueryBear parser catches it.
+- **`pg_*` system tables are visible by default for schema introspection** but are not query-allow-listed unless you opt in.
+- **Read replicas work.** Point QueryBear at your replica — the gateway doesn't care.
+- **Materialized views and views are first-class.** They appear in `get_schema` and are queryable like tables.
+- **PgVector and other extensions work transparently** — the parser permits `<->`, `<=>`, and other operator syntax.
+
+## Connect Postgres to your AI client
+
+Pick your client for a step-by-step guide:
+
+<CardGroup>
+  <Card title="Claude Code" href="/guides/postgres-claude-code">
+    One-line CLI setup. Read your DB from `claude` in the terminal.
+  </Card>
+  <Card title="Claude Desktop" href="/guides/postgres-claude-desktop">
+    Custom connector in Claude's desktop app.
+  </Card>
+  <Card title="Cursor" href="/guides/postgres-cursor">
+    Drop into `.cursor/mcp.json`. Query your DB while pairing with Cursor.
+  </Card>
+  <Card title="Codex" href="/guides/postgres-codex">
+    Add to `~/.codex/config.toml`. Database access in Codex CLI.
+  </Card>
+  <Card title="Windsurf" href="/guides/postgres-windsurf">
+    Add as a custom MCP server in Windsurf settings.
+  </Card>
+  <Card title="ChatGPT" href="/guides/postgres-chatgpt">
+    Custom connector in ChatGPT (developer mode).
+  </Card>
+</CardGroup>

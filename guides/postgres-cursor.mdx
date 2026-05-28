@@ -1,0 +1,77 @@
+---
+title: "PostgreSQL + Cursor"
+description: "How to set up a secure PostgreSQL MCP server for Cursor using QueryBear. Drop into .cursor/mcp.json. Step-by-step setup with read-only role and example queries."
+---
+
+This guide walks through connecting **PostgreSQL** to **[Cursor](https://cursor.com)** using QueryBear's managed MCP server. End result: Cursor's chat, composer, and inline modes can all query your Postgres database — perfect for migrations, schema-aware refactors, and debugging.
+
+## What you'll need
+
+- A QueryBear account ([sign up free](https://querybear.com/signup))
+- A PostgreSQL database (any version 12+)
+- Cursor 0.42+ (any version with MCP support)
+
+## Step 1: Create a read-only PostgreSQL role
+
+```sql
+CREATE ROLE querybear LOGIN PASSWORD 'choose-a-strong-one';
+GRANT CONNECT ON DATABASE your_db TO querybear;
+GRANT USAGE ON SCHEMA public TO querybear;
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO querybear;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public
+  GRANT SELECT ON TABLES TO querybear;
+```
+
+## Step 2: Add the connection to QueryBear
+
+In the [QueryBear dashboard](https://querybear.com/dashboard) → **Connections** → **New connection** → **PostgreSQL**, with the credentials from Step 1.
+
+## Step 3: Add QueryBear to Cursor
+
+Create `.cursor/mcp.json` in your project root (or `~/.cursor/mcp.json` for global):
+
+```json
+{
+  "mcpServers": {
+    "querybear": {
+      "url": "https://mcp.querybear.com/mcp"
+    }
+  }
+}
+```
+
+If you want the whole team using the same connection, commit `.cursor/mcp.json`. If not, add it to `.gitignore`.
+
+## Step 4: Authorize and verify
+
+Open Cursor. The first time it uses QueryBear, an OAuth browser tab opens — approve.
+
+In Cursor chat:
+
+> *"What QueryBear tools do you have? List my connections."*
+
+You should see `list_connections`, `get_schema`, `run_query`, and your Postgres connection.
+
+## Try it
+
+> *"I'm about to add `NOT NULL` to `users.email_verified_at`. Pull the schema for `users`, then count how many rows currently have NULL there."*
+
+Cursor calls `get_schema`, writes the `SELECT COUNT(*) ... WHERE email_verified_at IS NULL`, runs it through QueryBear, and reports back.
+
+Or, mid-refactor:
+
+> *"This function joins `orders` to `users` to `subscriptions`. Verify against production that no `orders.user_id` is orphaned."*
+
+## Postgres + Cursor gotchas
+
+- **`.cursor/mcp.json` is project-scoped.** If you have multiple projects targeting different DBs, you can configure each independently.
+- **Cursor caches MCP server status.** If you change the config, restart Cursor.
+- **Composer mode chains tool calls** — Cursor may call `get_schema` and `run_query` multiple times in one composer task. This is normal.
+- **For read replicas, point QueryBear at the replica.** Cursor's queries will land there, sparing your primary.
+- **Cursor's Postgres-native integration (`@db` syntax) is separate from MCP** — you don't need to choose one. They can coexist.
+
+## Related
+
+- [PostgreSQL MCP server](/databases/postgres) — Postgres-specific deep dive
+- [Cursor client](/clients/cursor) — Cursor overview
+- [Security model](/security) — what the gateway protects against

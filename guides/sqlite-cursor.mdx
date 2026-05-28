@@ -1,0 +1,55 @@
+---
+title: "SQLite + Cursor"
+description: "How to set up a secure SQLite MCP server for Cursor using QueryBear. Drop into .cursor/mcp.json. Step-by-step with file path and example queries."
+---
+
+This guide walks through connecting a **SQLite** file to **[Cursor](https://cursor.com)** using QueryBear's managed MCP server. End result: Cursor's chat and composer can query a local SQLite database while you code.
+
+## What you'll need
+
+- A QueryBear account ([sign up free](https://querybear.com/signup))
+- A SQLite file
+- Cursor with MCP support
+
+## Step 1: Add the SQLite connection to QueryBear
+
+[Dashboard](https://querybear.com/dashboard) → **Connections** → **New connection** → **SQLite**, with the file path.
+
+## Step 2: Add QueryBear to Cursor
+
+`.cursor/mcp.json` in your project root (or `~/.cursor/mcp.json` globally):
+
+```json
+{
+  "mcpServers": {
+    "querybear": {
+      "url": "https://mcp.querybear.com/mcp"
+    }
+  }
+}
+```
+
+## Step 3: Authorize and verify
+
+Open Cursor. First QueryBear call triggers OAuth in browser.
+
+> *"What QueryBear tools do you have? List my connections."*
+
+## Try it
+
+> *"This Electron app's SQLite DB has a `messages` table. Find the 10 most recent messages and their senders."*
+
+Cursor pulls the schema, writes a `SELECT ... ORDER BY created_at DESC LIMIT 10`, and runs it via QueryBear.
+
+## SQLite + Cursor gotchas
+
+- **`.cursor/mcp.json` is project-scoped** — useful when you have one SQLite file per project.
+- **`ATTACH DATABASE` blocked** at the parser.
+- **Cursor caches MCP server status** — restart Cursor after editing config.
+- **JSON1 functions work** transparently.
+
+## Related
+
+- [SQLite MCP server](/databases/sqlite) — SQLite-specific deep dive
+- [Cursor client](/clients/cursor) — Cursor overview
+- [Security model](/security) — what the gateway protects against

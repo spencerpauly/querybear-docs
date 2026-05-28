@@ -1,0 +1,72 @@
+---
+title: "MySQL + ChatGPT"
+description: "How to set up a secure MySQL MCP server for ChatGPT using QueryBear. Add as a Custom Connector in developer mode. Step-by-step with read-only user and example queries."
+---
+
+This guide walks through connecting **MySQL** (or MariaDB) to **ChatGPT** using QueryBear's managed MCP server. End result: ChatGPT can answer real questions about your MySQL data, including from Custom GPTs you share with your team.
+
+## What you'll need
+
+- A QueryBear account ([sign up free](https://querybear.com/signup))
+- A MySQL or MariaDB database (5.7+ / 10.x+)
+- ChatGPT Plus/Team/Enterprise (developer mode required)
+
+## Step 1: Create a read-only MySQL user
+
+```sql
+CREATE USER 'querybear'@'%' IDENTIFIED BY 'choose-a-strong-one';
+GRANT SELECT ON your_db.* TO 'querybear'@'%';
+GRANT SHOW VIEW ON your_db.* TO 'querybear'@'%';
+FLUSH PRIVILEGES;
+```
+
+## Step 2: Add the connection to QueryBear
+
+[Dashboard](https://querybear.com/dashboard) → **Connections** → **New connection** → **MySQL**, with the credentials from Step 1.
+
+**Important for ChatGPT:** Block PII columns (`email`, `phone`, `address`, `password_hash`) at the QueryBear level. Anything ChatGPT reads goes through OpenAI's API.
+
+## Step 3: Add QueryBear to ChatGPT
+
+<Steps>
+  <Step title="Enable developer mode">
+    **Settings** → **Connectors** → **Advanced** → enable **Developer mode**.
+  </Step>
+  <Step title="Add custom connector">
+    **Add connector** → **Custom connector**.
+  </Step>
+  <Step title="Fill in the form">
+    | Field | Value |
+    |---|---|
+    | Name | `querybear` |
+    | URL | `https://mcp.querybear.com/mcp` |
+  </Step>
+  <Step title="Authorize">
+    OAuth opens in browser. Approve.
+  </Step>
+</Steps>
+
+## Step 4: Verify
+
+> *"What QueryBear tools do you have? List my connections."*
+
+## Try it
+
+> *"From our MySQL DB, give me the top 20 products by revenue this quarter, with month-over-month growth. Format as a table."*
+
+## Productionize for team use
+
+Build a Custom GPT with QueryBear as a connector + a system prompt like *"Always use the production connection. Always call get_schema before writing SQL. Format results as markdown tables."* Share the GPT link with sales, support, or exec teams. Every query is logged in the QueryBear audit log.
+
+## MySQL + ChatGPT gotchas
+
+- **Free ChatGPT tier doesn't support Custom Connectors.**
+- **Block PII columns aggressively** — ChatGPT conversations may persist in OpenAI's systems.
+- **Multi-statement queries are blocked** at the parser even if ChatGPT writes one.
+- **For RDS or IP-restricted MySQL**, allow QueryBear's egress IP in your security group.
+
+## Related
+
+- [MySQL MCP server](/databases/mysql) — MySQL-specific deep dive
+- [ChatGPT client](/clients/chatgpt) — ChatGPT overview
+- [Security model](/security) — what the gateway protects against

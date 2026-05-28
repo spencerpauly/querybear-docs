@@ -1,0 +1,70 @@
+---
+title: "MySQL + Claude Desktop"
+description: "How to set up a secure MySQL MCP server for Claude Desktop using QueryBear. Add as a Custom Connector. Step-by-step with read-only user and example queries."
+---
+
+This guide walks through connecting **MySQL** (or MariaDB) to **Claude Desktop** using QueryBear's managed MCP server. End result: Claude Desktop conversations can query your MySQL database safely — accessible enough for non-technical teammates.
+
+## What you'll need
+
+- A QueryBear account ([sign up free](https://querybear.com/signup))
+- A MySQL or MariaDB database (5.7+ / 10.x+)
+- Claude Desktop installed
+
+## Step 1: Create a read-only MySQL user
+
+```sql
+CREATE USER 'querybear'@'%' IDENTIFIED BY 'choose-a-strong-one';
+GRANT SELECT ON your_db.* TO 'querybear'@'%';
+GRANT SHOW VIEW ON your_db.* TO 'querybear'@'%';
+FLUSH PRIVILEGES;
+```
+
+## Step 2: Add the connection to QueryBear
+
+In the [QueryBear dashboard](https://querybear.com/dashboard) → **Connections** → **New connection** → **MySQL**, with the credentials from Step 1. Allow-list tables and block sensitive columns in the **Access** tab.
+
+## Step 3: Add QueryBear to Claude Desktop
+
+<Steps>
+  <Step title="Open Settings → Connectors">
+    Profile → **Settings** → **Connectors**.
+  </Step>
+  <Step title="Add custom connector">
+    Click **Add custom connector**.
+  </Step>
+  <Step title="Fill in the form">
+    | Field | Value |
+    |---|---|
+    | Name | `querybear` |
+    | URL | `https://mcp.querybear.com/mcp` |
+  </Step>
+  <Step title="Authorize">
+    OAuth opens in browser. Approve.
+  </Step>
+</Steps>
+
+## Step 4: Verify
+
+In a new conversation:
+
+> *"What QueryBear tools do you have? List my connections."*
+
+## Try it
+
+> *"Pull the last 20 customer support tickets from our MySQL DB. Include the customer name, status, and assigned agent."*
+
+Claude calls `get_schema` to find the tickets table, writes the query, and returns the result.
+
+## MySQL + Claude Desktop gotchas
+
+- **Block PII columns** at the QueryBear level — anything Claude reads goes to Anthropic's API.
+- **Set a default connection** in QueryBear so Claude doesn't need `list_connections` every time. Saves a round-trip.
+- **For RDS or other IP-restricted MySQL**, allow QueryBear's egress IP in your security group (found under **Connections → Network** in the dashboard).
+- **Multi-statement queries are blocked** — even if Claude writes one, it's rejected at the parser.
+
+## Related
+
+- [MySQL MCP server](/databases/mysql) — MySQL-specific deep dive
+- [Claude Desktop client](/clients/claude-desktop) — Claude Desktop overview
+- [Security model](/security) — what the gateway protects against

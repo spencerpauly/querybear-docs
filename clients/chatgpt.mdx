@@ -1,0 +1,81 @@
+---
+title: "ChatGPT"
+description: "Connect ChatGPT to your PostgreSQL, MySQL, or SQLite database using QueryBear's secure MCP server. Add via Custom Connectors in developer mode."
+---
+
+**ChatGPT** supports MCP via **Custom Connectors** in Settings → Connectors → Advanced → Developer mode. Once added, any ChatGPT conversation — including with custom GPTs — can query your database through QueryBear.
+
+## Why QueryBear + ChatGPT
+
+ChatGPT is the AI client most non-technical users already have open. Pointing it at your data via QueryBear means:
+
+- Sales can ask *"how many trial accounts converted to paid in the last 30 days, broken down by source?"* without bothering analytics.
+- Support can look up a user's plan, last login, and recent activity in one ChatGPT message.
+- Executives can pull headline numbers during prep without waiting for a dashboard build.
+- Product can run "what if?" queries against real data while drafting specs.
+
+QueryBear's allow-list + column-block + audit log mean you can hand this access out broadly without the access being broad.
+
+## Setup
+
+In ChatGPT:
+
+<Steps>
+  <Step title="Enable developer mode">
+    **Settings** → **Connectors** → **Advanced** → enable **Developer mode**.
+  </Step>
+  <Step title="Add a custom connector">
+    Click **Add connector** → **Custom connector**.
+  </Step>
+  <Step title="Enter the QueryBear URL">
+    | Field | Value |
+    |---|---|
+    | Name | `querybear` |
+    | URL | `https://mcp.querybear.com/mcp` |
+  </Step>
+  <Step title="Authorize">
+    ChatGPT opens an OAuth flow. Approve, and your account is linked.
+  </Step>
+</Steps>
+
+## Verify
+
+In a new ChatGPT conversation, ask:
+
+> *"What QueryBear tools do you have?"*
+
+You should see `list_connections`, `get_schema`, and `run_query`.
+
+## Per-database setup guides
+
+<CardGroup cols={2}>
+  <Card title="PostgreSQL + ChatGPT" href="/guides/postgres-chatgpt">
+    Step-by-step Postgres setup, including read-only role SQL.
+  </Card>
+  <Card title="MySQL + ChatGPT" href="/guides/mysql-chatgpt">
+    Step-by-step MySQL setup, including read-only user SQL.
+  </Card>
+  <Card title="SQLite + ChatGPT" href="/guides/sqlite-chatgpt">
+    Local SQLite file setup.
+  </Card>
+</CardGroup>
+
+## Tips for using QueryBear in ChatGPT
+
+- **Use Projects.** Create a ChatGPT Project per database with a system prompt like *"Always use the production connection. Always call get_schema before writing SQL."* Saves repeating yourself.
+- **For team use, build a Custom GPT.** A Custom GPT with QueryBear as a connector and a database-specific system prompt is a turnkey internal tool — share the GPT link with sales, support, or exec teams.
+- **The audit log is essential at scale.** When a Custom GPT is shared across a team, the audit log shows you who ran what. Available in the QueryBear dashboard.
+- **Block PII columns aggressively.** ChatGPT conversations may persist in OpenAI's systems. Blocked columns never leave QueryBear, so they're never exposed to OpenAI.
+
+## Common workflows
+
+- *"How many users on the Pro plan haven't logged in in 30 days?"* (Sales-led retention)
+- *"Look up user with id 1842 — plan, MRR, last 10 events, support tickets count."* (Support concierge)
+- *"What's our YoY growth in monthly active users, by month, for the last 24 months?"* (Exec prep)
+- *"List the top 20 customers by lifetime value."* (Account management)
+
+## Related
+
+- [Quickstart](/quickstart) — full QueryBear setup
+- [Security model](/security) — what the gateway enforces
+- [Claude Desktop](/clients/claude-desktop) — Anthropic's chat-app sibling

@@ -1,0 +1,82 @@
+---
+title: "Claude Code"
+description: "Connect Claude Code to your PostgreSQL, MySQL, or SQLite database using QueryBear's secure MCP server. One-line CLI setup."
+---
+
+**[Claude Code](https://claude.com/claude-code)** is Anthropic's terminal-based AI coding agent. It speaks MCP natively, so adding QueryBear takes one command — your terminal Claude session can now read your real production database safely.
+
+## Why QueryBear + Claude Code
+
+Claude Code is most useful when it has visibility into the systems you're working on. For backend work, that almost always includes the database. QueryBear lets Claude Code:
+
+- Answer "how many rows match X?" without you writing SQL by hand.
+- Generate reports against production data while pair-programming.
+- Verify migrations against real schemas (read-only — it can't run the migration itself).
+- Debug user-reported issues by looking up the actual row.
+
+…all without giving Claude Code direct database credentials, write access, or visibility into sensitive columns.
+
+## Setup
+
+Run this in your terminal:
+
+```bash
+claude mcp add --transport http querybear https://mcp.querybear.com/mcp
+```
+
+That's it. The next time you start `claude`, it will prompt you to authorize QueryBear via OAuth — opens a browser, you click "Approve", and it links Claude Code to your QueryBear account.
+
+## Verify
+
+Inside a Claude Code session, ask:
+
+> *"What QueryBear tools do you have available?"*
+
+You should see `list_connections`, `get_schema`, and `run_query`. If you don't, restart `claude` and try again.
+
+## Per-database setup guides
+
+<CardGroup cols={2}>
+  <Card title="PostgreSQL + Claude Code" href="/guides/postgres-claude-code">
+    Step-by-step Postgres setup, including read-only role SQL.
+  </Card>
+  <Card title="MySQL + Claude Code" href="/guides/mysql-claude-code">
+    Step-by-step MySQL setup, including read-only user SQL.
+  </Card>
+  <Card title="SQLite + Claude Code" href="/guides/sqlite-claude-code">
+    Local SQLite file setup.
+  </Card>
+</CardGroup>
+
+## Tips for using QueryBear in Claude Code
+
+- **Let Claude run `get_schema` first.** It dramatically improves query quality. If you're debugging, you can also explicitly ask: *"call get_schema for the users table first."*
+- **Be explicit about which connection.** If you have multiple databases connected, name one: *"using the production connection, count signups this week."* Saves a `list_connections` round-trip.
+- **Read the audit log.** Every query Claude ran is in the QueryBear dashboard under **Audit log**. Helpful when an answer looks suspicious — you can verify the exact SQL.
+- **Block any column you wouldn't want in Claude's training data telemetry.** Anything Claude sees goes through Anthropic's API. For PII, set the column blocklist in QueryBear.
+
+## Common workflows
+
+**Debugging a user report:**
+
+> *"User id 9182 says they didn't receive a confirmation email. Check their account status, last login, and any recent email events."*
+
+Claude calls `get_schema`, finds the relevant tables, joins them, and reports — without you writing the query.
+
+**Sanity-checking a migration:**
+
+> *"I'm about to add a NOT NULL constraint to `users.email_verified_at`. How many users currently have NULL there?"*
+
+A pre-migration safety check Claude can run in seconds.
+
+**Generating ad-hoc reports:**
+
+> *"Weekly active users by signup cohort, last 8 weeks, output as a markdown table."*
+
+Claude writes the SQL, runs it, formats the result inline.
+
+## Related
+
+- [Quickstart](/quickstart) — full QueryBear setup
+- [Security model](/security) — what the gateway enforces
+- [Claude Desktop](/clients/claude-desktop) — the GUI sibling of Claude Code

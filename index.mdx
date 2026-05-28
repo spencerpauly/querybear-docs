@@ -1,24 +1,74 @@
 ---
 title: "Introduction"
-description: "Welcome to your Mintlify project"
+description: "QueryBear is a secure, read-only MCP server that connects AI assistants like Claude, Cursor, and ChatGPT to your production PostgreSQL, MySQL, and SQLite databases."
 ---
 
-Write a short description of your product here. What it does, who it's for, and what they can accomplish with it.
+QueryBear is a managed **MCP (Model Context Protocol) server** that gives AI assistants safe, read-only access to your databases. Drop the QueryBear MCP endpoint into Claude Code, Cursor, ChatGPT, Codex, Windsurf, or Claude Desktop, and your agent can answer questions like *"how many users signed up last week?"* by writing a real SQL query against your real database — without you giving it the ability to break anything.
 
-<Card title="Quickstart" icon="rocket" href="/quickstart">
-  This card links to the quickstart page in your project.
-</Card>
-<Card title="Components" icon="puzzle-piece" href="https://mintlify.com/docs/components">
-  Add cards, callouts, steps, tabs, and more to design and structure your pages. This card links to the components overview in the Mintlify documentation with information about every available component.
+## The problem
 
-  Edit this card to link to a different page in your project when you add more content.
-</Card>
-<Card title="Settings" icon="gear" href="https://mintlify.com/docs/organize/settings">
-  Set your site name, branding, and navigation in the `docs.json` file. This card links to the settings overview page in the Mintlify documentation with information about how to configure your project.
+AI agents are useful only when they can see your data. But pointing them at your production database directly is a disaster waiting to happen:
 
-  Edit this card to link to a different page in your project when you add more content.
-</Card>
+- A misbehaving agent could run `DROP TABLE users` and you'd find out at 3am.
+- A prompt-injected agent could `SELECT * FROM api_keys` and exfiltrate secrets.
+- A naive agent could `SELECT *` from your 800-million-row events table and DoS your read replica.
+- A non-technical user has no way to audit what queries the agent actually ran.
 
-<Tip>
-  Ready to make this your own? Start by editing this page. Update your `docs.json` file to customize your site. Then fill out the [Quickstart](/quickstart) page.
-</Tip>
+The standard advice — "just use a read-only Postgres role" — solves the first problem and none of the others. Read-only roles can still read every column, run unbounded scans, and don't help you when the agent itself is being manipulated.
+
+## What QueryBear does
+
+QueryBear sits between the agent and your database as a hardened SQL gateway:
+
+<CardGroup>
+  <Card title="SQL parser enforces read-only">
+    Every query is parsed before execution. `INSERT`, `UPDATE`, `DELETE`, and all DDL are rejected at the gateway — not just by the database role.
+  </Card>
+  <Card title="Allow-listed tables">
+    Only tables you opt in are visible to the agent. Everything else is invisible in schema responses and rejected if queried.
+  </Card>
+  <Card title="Blocked columns">
+    Mark sensitive columns (passwords, tokens, PII) once. They're stripped from schema results and any query referencing them is rejected.
+  </Card>
+  <Card title="Row limits and timeouts">
+    Every query gets an enforced `LIMIT` and a wall-clock timeout. The agent can't accidentally pull millions of rows or run a 10-minute scan.
+  </Card>
+  <Card title="Full audit log">
+    Every query, every schema fetch, every connection — logged with timestamp and originating client. Available in the dashboard.
+  </Card>
+  <Card title="Works with any MCP client">
+    Claude Code, Claude Desktop, Cursor, Codex, Windsurf, and ChatGPT all supported with one-line config.
+  </Card>
+</CardGroup>
+
+## Supported databases
+
+- [PostgreSQL](/databases/postgres) — 12+
+- [MySQL](/databases/mysql) — 5.7+ and MariaDB
+- [SQLite](/databases/sqlite) — local file access
+
+## Supported AI clients
+
+- [Claude Code](/clients/claude-code)
+- [Claude Desktop](/clients/claude-desktop)
+- [Cursor](/clients/cursor)
+- [Codex](/clients/codex)
+- [Windsurf](/clients/windsurf)
+- [ChatGPT](/clients/chatgpt)
+
+## Next steps
+
+<CardGroup>
+  <Card title="Quickstart" href="/quickstart">
+    Connect your first database and wire up an AI client in 5 minutes.
+  </Card>
+  <Card title="What is MCP?" href="/what-is-mcp">
+    New to Model Context Protocol? Start here.
+  </Card>
+  <Card title="Security model" href="/security">
+    The full defense-in-depth model and threat assumptions.
+  </Card>
+  <Card title="Setup guides" href="/guides/postgres-claude-code">
+    Step-by-step guides for every database × AI client combination.
+  </Card>
+</CardGroup>

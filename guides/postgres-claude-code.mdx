@@ -1,0 +1,86 @@
+---
+title: "PostgreSQL + Claude Code"
+description: "How to set up a secure PostgreSQL MCP server for Claude Code using QueryBear. Step-by-step setup with read-only role, one-line CLI install, and example queries."
+---
+
+This guide walks through connecting **PostgreSQL** to **[Claude Code](https://claude.com/claude-code)** using QueryBear's managed MCP server. End result: your terminal Claude session can read your Postgres database safely — no write access, no sensitive columns exposed, every query logged.
+
+## What you'll need
+
+- A QueryBear account ([sign up free](https://querybear.com/signup))
+- A PostgreSQL database (any version 12+)
+- Claude Code installed (`npm i -g @anthropic-ai/claude-code` or via your preferred installer)
+
+## Step 1: Create a read-only PostgreSQL role
+
+Run this as a Postgres superuser. It creates a `querybear` role that can only `SELECT`:
+
+```sql
+CREATE ROLE querybear LOGIN PASSWORD 'choose-a-strong-one';
+GRANT CONNECT ON DATABASE your_db TO querybear;
+GRANT USAGE ON SCHEMA public TO querybear;
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO querybear;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public
+  GRANT SELECT ON TABLES TO querybear;
+```
+
+QueryBear's gateway is already read-only — this role is belt-and-suspenders.
+
+## Step 2: Add the connection to QueryBear
+
+In the [QueryBear dashboard](https://querybear.com/dashboard) → **Connections** → **New connection** → **PostgreSQL**:
+
+- **Host** — e.g. `db.example.com` or your RDS endpoint
+- **Port** — `5432`
+- **Database** — your DB name
+- **User** — `querybear`
+- **Password** — from Step 1
+- **SSL mode** — `require`
+
+QueryBear fetches your schema. Use the **Access** tab to allow-list specific tables and block sensitive columns (`password_hash`, `email`, etc.).
+
+## Step 3: Add QueryBear to Claude Code
+
+One command:
+
+```bash
+claude mcp add --transport http querybear https://mcp.querybear.com/mcp
+```
+
+That's it. Restart `claude` if you had a session open.
+
+## Step 4: Authorize and verify
+
+Start a Claude Code session:
+
+```bash
+claude
+```
+
+The first tool call from Claude opens a browser for OAuth — approve, and Claude is linked to your QueryBear account.
+
+To verify, ask:
+
+> *"What QueryBear tools do you have, and what connections are available?"*
+
+You should see `list_connections`, `get_schema`, `run_query`, and your Postgres connection listed.
+
+## Try it
+
+> *"In production Postgres, how many users signed up in the last 7 days, broken down by signup source?"*
+
+Claude calls `get_schema` to find the relevant tables, writes the SQL, calls `run_query`, and returns the result.
+
+## Postgres + Claude Code gotchas
+
+- **CTE writes are blocked.** Postgres allows `WITH x AS (DELETE ...) SELECT * FROM x`. QueryBear's parser rejects this — if Claude generates such a query, it'll see a clear error.
+- **Connection pooling-mode Postgres (PgBouncer transaction mode) is fine** for read queries. No special config needed.
+- **PgVector works transparently.** Operators like `<->`, `<=>`, `<#>` are allowed.
+- **Materialized views and views** appear in `get_schema` and are queryable.
+- **Schemas other than `public`** need an additional `GRANT USAGE ON SCHEMA <name>` for the `querybear` role.
+
+## Related
+
+- [PostgreSQL MCP server](/databases/postgres) — Postgres-specific deep dive
+- [Claude Code client](/clients/claude-code) — Claude Code overview
+- [Security model](/security) — what the gateway protects against
